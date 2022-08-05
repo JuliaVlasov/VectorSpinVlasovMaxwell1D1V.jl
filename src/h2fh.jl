@@ -41,7 +41,7 @@ function H2fh(f0, f1, f2, f3, E3, A3, t, M, N, L, H, h_int)
             translatorv1[:, i],
             H,
         )
-        u2[:, i] = translation(
+        u2[:, i] .= translation(
             (0.5 * savevaluef0[:, i] .- 0.5 * sqrt(3) .* savevaluef2[:, i]),
             N,
             translatorv2[:, i],
@@ -71,4 +71,54 @@ function H2fh(f0, f1, f2, f3, E3, A3, t, M, N, L, H, h_int)
         E3t[i] = E3[i] - t * h_int * (1im * 2 * pi * k / L) * sum(ff2[:, i]) * 2 * H / N
     end
     return f0t, f1t, f2t, f3t, E3t
+end
+
+"""
+compute the subsystem H2
+
+$(SIGNATURES)
+
+"""
+function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
+
+    N, M = size(f0)
+
+    #####################################################
+    # use FFT to compute A3_x; A3_xx
+    partialA3 = zeros(ComplexF64, M)
+    partial2A3 = zeros(ComplexF64, M)
+    value1 = 1:(M-1)÷2 .+ 1
+    value2 = (M-1)÷2 .+ 2:M
+    partialA3[value1] .= (((2pi * 1im / L .* (value1 .- 1))) .* A3[value1])
+    partialA3[value2] .= (((2pi * 1im / L .* (value2 .- M .- 1))) .* A3[value2])
+    partialA3 .= real(ifft(partialA3))
+    partial2A3[value1] .= (-((2pi / L * (value1 .- 1)) .^ 2) .* A3[value1])
+    partial2A3[value2] .= (-((2pi / L * (value2 .- M .- 1)) .^ 2) .* A3[value2])
+    partial2A3 .= real(ifft(partial2A3))
+    # solve transport problem in v direction by Semi-Lagrangian method
+    translatorv1 = t .* h_int .* real(partial2A3) ./ sqrt(3)
+    translatorv2 = -translatorv1
+
+    u1 = 0.5 * f0 .+ 0.5 * sqrt(3) .* f2
+    u2 = 0.5 * f0 .- 0.5 * sqrt(3) .* f2
+
+    translation!( u1, translatorv1, H)
+    translation!( u2, translatorv2, H)
+    f0 .= u1 .+ u2
+    f2 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
+    f1 .= cos.(t .* real(partialA3')) .* f1 .+ sin.(t .* real(partialA3')) .* f3
+    f3 .= -sin.(t .* real(partialA3')) .* f1 .+ cos.(t .* real(partialA3')) .* f3
+    
+    ff2 = complex(f2)
+    for i = 1:N
+        ff2[i, :] .= fft(ff2[i, :])
+    end
+    #cpmputation of E3
+    for i = 2:(M-1)÷2+1
+        E3[i] = E3[i] - t * h_int * (1im * 2pi * (i - 1) / L) * sum(ff2[:, i]) * 2 * H / N
+    end
+    for i = (M-1)÷2+2:M
+        k = i - M - 1
+        E3[i] = E3[i] - t * h_int * (1im * 2 * pi * k / L) * sum(ff2[:, i]) * 2 * H / N
+    end
 end
