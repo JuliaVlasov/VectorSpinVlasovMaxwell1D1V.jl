@@ -60,22 +60,17 @@ function main()
         f3_value_at_node[i, k] = (ata / 3.0) * f0_value_at_node[i, k]
     end
 
-    initialvalue_f0 = zeros(N, M)
-    initialvalue_f1 = zeros(N, M)
-    initialvalue_f2 = zeros(N, M)
-    initialvalue_f3 = zeros(N, M)
+    f0 = zeros(N, M)
+    f1 = zeros(N, M)
+    f2 = zeros(N, M)
+    f3 = zeros(N, M)
 
     for k = 1:M
-        initialvalue_f0[:, k] .= numeint(f0_value_at_node[:, k], N)
-        initialvalue_f1[:, k] .= numeint(f1_value_at_node[:, k], N)
-        initialvalue_f2[:, k] .= numeint(f2_value_at_node[:, k], N)
-        initialvalue_f3[:, k] .= numeint(f3_value_at_node[:, k], N)
+        f0[:, k] .= numeint(f0_value_at_node[:, k], N)
+        f1[:, k] .= numeint(f1_value_at_node[:, k], N)
+        f2[:, k] .= numeint(f2_value_at_node[:, k], N)
+        f3[:, k] .= numeint(f3_value_at_node[:, k], N)
     end
-
-    f0 = initialvalue_f0
-    f1 = initialvalue_f1
-    f2 = initialvalue_f2
-    f3 = initialvalue_f3
 
     # test several properties include electric energy; total energy; spectrum etc. save initial data
     Ex_energy = Float64[]
