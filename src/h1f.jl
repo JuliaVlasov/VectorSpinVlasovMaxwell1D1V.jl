@@ -75,41 +75,35 @@ function H1f!(f0, f1, f2, f3, E1, t, L, H)
     N, M = size(f0)
     #####################################################
     # computation of fO & f
-    ff0 = complex(f0)
-    ff1 = complex(f1)
-    ff2 = complex(f2)
-    ff3 = complex(f3)
+    ff0 = complex(f0')
+    ff1 = complex(f1')
+    ff2 = complex(f2')
+    ff3 = complex(f3')
     v = (1:N) .* 2 .* H ./ N .- H .- H ./ N
     # Fourier transform
 
-    fft!(ff0, 2)
-    fft!(ff1, 2)
-    fft!(ff2, 2)
-    fft!(ff3, 2)
+    fft!(ff0, 1)
+    fft!(ff1, 1)
+    fft!(ff2, 1)
+    fft!(ff3, 1)
     # frequency: k_fre=[0:M/2-1,-M/2:-1]
     # M is odd; odd frequency number
-    k_fre = 2pi / L .* [0:(M-1)÷2; -(M - 1)÷2:-1]
+    k = 2pi / L .* [0:(M-1)÷2; -(M - 1)÷2:-1]
     # FFT in x direction to solve f_t+v f_x=0
-    ff0 .*= exp.(- 1im * k_fre' .* v * t)
-    ff1 .*= exp.(- 1im * k_fre' .* v * t)
-    ff2 .*= exp.(- 1im * k_fre' .* v * t)
-    ff3 .*= exp.(- 1im * k_fre' .* v * t)
+    ff0 .*= exp.(- 1im * k .* v' * t)
+    ff1 .*= exp.(- 1im * k .* v' * t)
+    ff2 .*= exp.(- 1im * k .* v' * t)
+    ff3 .*= exp.(- 1im * k .* v' * t)
 
-    f0 .= real(ifft(ff0,2))
-    f1 .= real(ifft(ff1,2))
-    f2 .= real(ifft(ff2,2))
-    f3 .= real(ifft(ff3,2))
+    f0 .= real(ifft(ff0,1)')
+    f1 .= real(ifft(ff1,1)')
+    f2 .= real(ifft(ff2,1)')
+    f3 .= real(ifft(ff3,1)')
 
     ################################################################
     #below we compute E1; solve Ampere equation
     #poisson equation error in fourier version()
-    for i = 2:(M-1)÷2+1
-        E1[i] += L / (1im * 2pi * (i - 1)) * sum(ff0[:, i] .* (exp.(-1im * 2pi / L * (i - 1) * t .* v) .- 1.0)) *
-            2 * H / N
-    end
-
-    for i = (M-1)÷2+2:M
-        k = i - M - 1
-        E1[i] += L / (1im * 2pi * k) * sum(ff0[:, i] .* (exp.(-1im * 2pi / L * k * t .* v) .- 1.0)) * 2 * H / N
+    for i = 2:M
+        E1[i] += 1.0 ./ (1im .* k[i] ) .* sum(ff0[i,:] .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * 2H / N
     end
 end
