@@ -85,25 +85,20 @@ function H2fh!(f0::Matrix{Float64}, f1::Matrix{Float64}, f2::Matrix{Float64}, f3
 
     #####################################################
     # use FFT to compute A3_x; A3_xx
-    partialA3 = zeros(ComplexF64, M)
-    partial2A3 = zeros(ComplexF64, M)
-    value1 = 1:(M-1)÷2 .+ 1
-    value2 = (M-1)÷2 .+ 2:M
-    partialA3[value1] .= (((2pi * 1im / L .* (value1 .- 1))) .* A3[value1])
-    partialA3[value2] .= (((2pi * 1im / L .* (value2 .- M .- 1))) .* A3[value2])
+    k = fftfreq(M, M) .* 2π ./ L
+    partialA3 = 1im .* k .* A3
     ifft!(partialA3)
-    partial2A3[value1] .= (-((2pi / L * (value1 .- 1)) .^ 2) .* A3[value1])
-    partial2A3[value2] .= (-((2pi / L * (value2 .- M .- 1)) .^ 2) .* A3[value2])
+    partial2A3 = - k.^ 2 .* A3
     ifft!(partial2A3)
     # solve transport problem in v direction by Semi-Lagrangian method
-    translatorv1 = t .* h_int .* real(partial2A3) ./ sqrt(3)
-    translatorv2 = -translatorv1
+    v1 = t .* h_int .* real(partial2A3) ./ sqrt(3)
+    v2 = -v1
 
     u1 = 0.5 * f0 .+ 0.5 * sqrt(3) .* f2
     u2 = 0.5 * f0 .- 0.5 * sqrt(3) .* f2
 
-    translation!( u1, translatorv1, H)
-    translation!( u2, translatorv2, H)
+    translation!( u1, v1, H)
+    translation!( u2, v2, H)
     f0 .= u1 .+ u2
     f2 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
     f1 .= cos.(t .* real(partialA3')) .* f1 .+ sin.(t .* real(partialA3')) .* f3
@@ -112,11 +107,5 @@ function H2fh!(f0::Matrix{Float64}, f1::Matrix{Float64}, f2::Matrix{Float64}, f3
     ff2 = complex(f2)
     fft!(ff2, 2)
     #cpmputation of E3
-    for i = 2:(M-1)÷2+1
-        E3[i] = E3[i] - t * h_int * (1im * 2pi * (i - 1) / L) * sum(ff2[:, i]) * 2 * H / N
-    end
-    for i = (M-1)÷2+2:M
-        k = i - M - 1
-        E3[i] = E3[i] - t * h_int * (1im * 2pi * k / L) * sum(ff2[:, i]) * 2 * H / N
-    end
+    E3 .= E3 .- t .* h_int .* (1im .* k ) .* vec(sum(ff2, dims=1)) .* 2 .* H ./ N
 end
