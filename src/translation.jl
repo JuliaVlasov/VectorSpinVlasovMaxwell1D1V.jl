@@ -4,14 +4,17 @@ $(SIGNATURES)
 old is the integral average value in each cell of function f(x)
 new is the integral average value in each cell of function f(x+delta)
 """
-function translation!(new, old, N, delta, H)
+function translation!(new, old, delta, H)
 
     # first recover oldvector & get the coefficients of piecewise polynomials
+
+    N, M = size(old)
+    @assert length(delta) == M
 
     f1 = zeros(N + 1)
     a = zeros(N)
     b = zeros(N)
-    c = zeros(N)
+    c = zeros(N+1)
     cc = zeros(N)
     diagonal = ones(N + 1)
     upright = 1 / 3 .* ones(N)
@@ -20,11 +23,11 @@ function translation!(new, old, N, delta, H)
     diagonal[2:N] .= 4 / 3 
     A = SymTridiagonal(diagonal, upright)
 
-    for j = 1:M
+    @inbounds for j = 1:M
 
         f1[2:N] .= old[1:N-1,j] .+ old[2:N, j]
-        f1[1] = old[1]
-        f1[N+1] = old[N]
+        f1[1] = old[1,j]
+        f1[N+1] = old[N,j]
         # get result
         c .= A \ f1
 
