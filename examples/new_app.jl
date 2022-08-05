@@ -5,7 +5,7 @@ using ProgressMeter
 import VectorSpinVlasovMaxwell1D1V: initialfunction
 import VectorSpinVlasovMaxwell1D1V: numeint
 import VectorSpinVlasovMaxwell1D1V: diagnostics
-import VectorSpinVlasovMaxwell1D1V: H2fh
+import VectorSpinVlasovMaxwell1D1V: H2fh!
 import VectorSpinVlasovMaxwell1D1V: He!
 import VectorSpinVlasovMaxwell1D1V: HAA!
 import VectorSpinVlasovMaxwell1D1V: H3fh
@@ -92,7 +92,7 @@ function new_main()
 
     @showprogress 1 for i = 1:NUM # Loop over time
 
-        f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h/2, M, N, L, H, h_int)
+        H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
         He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
         HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
         f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h/2, M, N, L, H, h_int)
@@ -100,7 +100,7 @@ function new_main()
         f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h/2, M, N, L, H, h_int)
         HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
         He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
-        f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h/2, M, N, L, H, h_int)
+        H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
         
         # save properties each time interation
         results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
@@ -121,3 +121,5 @@ end
 @time time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = new_main()
 
 plot(time, Ex_energy)
+#plot(time, E_energy)
+#plot(time, B_energy)
