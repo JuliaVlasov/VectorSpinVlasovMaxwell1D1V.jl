@@ -44,15 +44,11 @@ function He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, t, H)
     translatevaluev = -t .* real(ifft(E1))
     #####################################################
 
-    f0t = copy(f0)
-    f1t = copy(f1)
-    f2t = copy(f2)
-    f3t = copy(f3)
     # translate in v direction
-    translation!(f0, f0t, translatevaluev, H)
-    translation!(f1, f1t, translatevaluev, H)
-    translation!(f2, f2t, translatevaluev, H)
-    translation!(f3, f3t, translatevaluev, H)
+    translation!(f0, translatevaluev, H)
+    translation!(f1, translatevaluev, H)
+    translation!(f2, translatevaluev, H)
+    translation!(f3, translatevaluev, H)
     #####################################################
 
 end

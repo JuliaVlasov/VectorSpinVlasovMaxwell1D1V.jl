@@ -4,11 +4,11 @@ $(SIGNATURES)
 old is the integral average value in each cell of function f(x)
 new is the integral average value in each cell of function f(x+delta)
 """
-function translation!(new, old, delta, H)
+function translation!(df, delta, H)
 
     # first recover oldvector & get the coefficients of piecewise polynomials
 
-    N, M = size(old)
+    N, M = size(df)
     @assert length(delta) == M
 
     f1 = zeros(N + 1)
@@ -25,9 +25,9 @@ function translation!(new, old, delta, H)
 
     @inbounds for j = 1:M
 
-        f1[2:N] .= old[1:N-1,j] .+ old[2:N, j]
-        f1[1] = old[1,j]
-        f1[N+1] = old[N,j]
+        f1[2:N] .= df[1:N-1,j] .+ df[2:N, j]
+        f1[1] = df[1,j]
+        f1[N+1] = df[N,j]
         # get result
         c .= A \ f1
 
@@ -48,7 +48,7 @@ function translation!(new, old, delta, H)
             newbeta = beta - N * loopnumber
 
             if (abs(newbeta) < 1e-20) || (abs(newbeta - N) < 1e-20)
-                new[i,j] = old[N,j]
+                df[i,j] = df[N,j]
             elseif newbeta >= 1.0
                 index = floor(Int, newbeta)
                 k = 1 - (newbeta - index)
@@ -57,7 +57,7 @@ function translation!(new, old, delta, H)
                 valueI = valueI - c[index] * (1 - k)
                 valueII = a[index+1] / 3 * (1 - k)^3 + b[index+1] / 2 * (1 - k)^2
                 valueII = valueII + c[index+1] * (1 - k)
-                new[i,j] = valueI + valueII
+                df[i,j] = valueI + valueII
 
             else
                 index = N
@@ -66,7 +66,7 @@ function translation!(new, old, delta, H)
                 valueI = valueI - a[index] / 3 * (1 - k)^3 - b[index] / 2 * (1 - k)^2
                 valueI = valueI - c[index] * (1 - k)
                 valueII = a[1] / 3 * (1 - k)^3 + b[1] / 2 * (1 - k)^2 + c[1] * (1 - k)
-                new[i,j] = valueI + valueII
+                df[i,j] = valueI + valueII
             end
         end
     end
