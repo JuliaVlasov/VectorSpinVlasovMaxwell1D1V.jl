@@ -8,8 +8,8 @@ import VectorSpinVlasovMaxwell1D1V: diagnostics
 import VectorSpinVlasovMaxwell1D1V: H2fh!
 import VectorSpinVlasovMaxwell1D1V: He!
 import VectorSpinVlasovMaxwell1D1V: HAA!
-import VectorSpinVlasovMaxwell1D1V: H3fh
-import VectorSpinVlasovMaxwell1D1V: H1f
+import VectorSpinVlasovMaxwell1D1V: H3fh!
+import VectorSpinVlasovMaxwell1D1V: H1f!
 
 function new_main()
 
@@ -95,9 +95,9 @@ function new_main()
         H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
         He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
         HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
-        f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h/2, M, N, L, H, h_int)
-        f0, f1, f2, f3, E1 = H1f(f0, f1, f2, f3, E1, h, M, N, L, H)
-        f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h/2, M, N, L, H, h_int)
+        H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
+        H1f!(f0, f1, f2, f3, E1, h, L, H)
+        H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
         HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
         He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
         H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)

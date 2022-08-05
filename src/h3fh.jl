@@ -1,3 +1,7 @@
+
+"""
+$(SIGNATURES)
+"""
 function H3fh(f0, f1, f2, f3, E2, A2, t, M, N, L, H, h_int)
     # compute the subsystem H3
     savevaluef0 = copy(f0)
@@ -66,4 +70,50 @@ function H3fh(f0, f1, f2, f3, E2, A2, t, M, N, L, H, h_int)
         E2t[i] = E2[i] + t * h_int * (1im * 2pi * k / L) * sum(ff3[:, i]) * 2 * H / N
     end
     return f0t, f1t, f2t, f3t, E2t
+end
+
+"""
+$(SIGNATURES)
+"""
+function H3fh!(f0::Matrix{Float64}, f1::Matrix{Float64}, f2::Matrix{Float64}, f3::Matrix{Float64}, E2, A2, t, L, H, h_int)
+   
+    N, M = size(f0)
+
+    #####################################################
+    # use FFT to compute A2_x; A2_xx
+    partialA2 = zeros(ComplexF64, M)
+    partial2A2 = zeros(ComplexF64, M)
+    value1 = 1:(M-1)÷2+1
+    value2 = (M-1)÷2+2:M
+    partialA2[value1] = (((2pi * 1im / L * (value1 .- 1))) .* A2[value1])
+    partialA2[value2] = (((2pi * 1im / L * (value2 .- M .- 1))) .* A2[value2])
+    ifft!(partialA2)
+    partial2A2[value1] = (-((2pi / L * (value1 .- 1)) .^ 2) .* A2[value1])
+    partial2A2[value2] = (-((2pi / L * (value2 .- M .- 1)) .^ 2) .* A2[value2])
+    ifft!(partial2A2)
+    # solve transport problem in v direction by Semi-Lagrangain method
+    translatorv1 = -t * h_int * real(partial2A2) ./ sqrt(3)
+    translatorv2 = -translatorv1
+
+    u1 = 0.5*f0 .+ 0.5*sqrt(3)*f3
+    u2 = 0.5*f0 .- 0.5*sqrt(3)*f3
+
+    translation!( u1, translatorv1, H)
+    translation!( u2, translatorv2, H)
+
+    f0 .= u1 .+ u2
+    f3 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
+    f1 .= cos.(t * real(partialA2')) .* f1 .+ sin.(t * real(partialA2')) .* f2
+    f2 .= -sin.(t * real(partialA2')) .* f1 .+ cos.(t * real(partialA2')) .* f2
+    #####################################################
+    ff3 = complex(f3)
+    fft!(ff3,2)
+    #computation of E3
+    for i = 2:(M-1)÷2+1
+        E2[i] = E2[i] + t * h_int * (1im * 2pi * (i - 1) / L) * sum(ff3[:, i]) * 2 * H / N
+    end
+    for i = (M-1)÷2+2:M
+        k = i - M - 1
+        E2[i] = E2[i] + t * h_int * (1im * 2pi * k / L) * sum(ff3[:, i]) * 2 * H / N
+    end
 end

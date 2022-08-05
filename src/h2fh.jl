@@ -79,7 +79,7 @@ compute the subsystem H2
 $(SIGNATURES)
 
 """
-function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
+function H2fh!(f0::Matrix{Float64}, f1::Matrix{Float64}, f2::Matrix{Float64}, f3::Matrix{Float64}, E3, A3, t, L, H, h_int)
 
     N, M = size(f0)
 
@@ -91,10 +91,10 @@ function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
     value2 = (M-1)÷2 .+ 2:M
     partialA3[value1] .= (((2pi * 1im / L .* (value1 .- 1))) .* A3[value1])
     partialA3[value2] .= (((2pi * 1im / L .* (value2 .- M .- 1))) .* A3[value2])
-    partialA3 .= real(ifft(partialA3))
+    ifft!(partialA3)
     partial2A3[value1] .= (-((2pi / L * (value1 .- 1)) .^ 2) .* A3[value1])
     partial2A3[value2] .= (-((2pi / L * (value2 .- M .- 1)) .^ 2) .* A3[value2])
-    partial2A3 .= real(ifft(partial2A3))
+    ifft!(partial2A3)
     # solve transport problem in v direction by Semi-Lagrangian method
     translatorv1 = t .* h_int .* real(partial2A3) ./ sqrt(3)
     translatorv2 = -translatorv1
@@ -110,15 +110,13 @@ function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
     f3 .= -sin.(t .* real(partialA3')) .* f1 .+ cos.(t .* real(partialA3')) .* f3
     
     ff2 = complex(f2)
-    for i = 1:N
-        ff2[i, :] .= fft(ff2[i, :])
-    end
+    fft!(ff2, 2)
     #cpmputation of E3
     for i = 2:(M-1)÷2+1
         E3[i] = E3[i] - t * h_int * (1im * 2pi * (i - 1) / L) * sum(ff2[:, i]) * 2 * H / N
     end
     for i = (M-1)÷2+2:M
         k = i - M - 1
-        E3[i] = E3[i] - t * h_int * (1im * 2 * pi * k / L) * sum(ff2[:, i]) * 2 * H / N
+        E3[i] = E3[i] - t * h_int * (1im * 2pi * k / L) * sum(ff2[:, i]) * 2 * H / N
     end
 end
