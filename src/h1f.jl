@@ -115,6 +115,7 @@ struct H1fOperator
     adv::Translator
     tmp::Matrix{ComplexF64}
 
+    H1fOperator(adv) = new(adv, zeros(ComplexF64, adv.mesh.M, adv.mesh.N))
 
 end
 
