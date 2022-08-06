@@ -13,7 +13,7 @@ import VectorSpinVlasovMaxwell1D1V: H1f!
 
 function new_main()
 
-    T = 100 # 4000  # final time
+    T = 20 # 4000  # final time
     M = 65   # partition of x
     N = 129   # partition of v
     H = 5.0 / 2   # v domain size()
