@@ -83,24 +83,21 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
     AA2 = real(ifft(A2))
     AA3 = real(ifft(A3))
 
-    # solve transport problem in v direction by Semi-Lagrangain method
-    nonlinear = real(partialA2) .* (real(ifft(A2))) .+ real(partialA3) .* (real(ifft(A3)))
-    v = t .* nonlinear
+    v = real(partialA2) .* AA2 .+ real(partialA3) .* AA3
+    v .*= t 
 
     for i in 2:M
         E2[i] += t * k[i]^2 * A2[i]
         E3[i] += t * k[i]^2 * A3[i]
     end
 
-    II = zeros(M)
     for i = 1:M
-        II[i] = 2H / N * AA2[i] * sum(view(f0,:, i))
+        s = sum(view(f0,:, i))
+        AA2[i] = 2H / N * AA2[i] * s
+        AA3[i] = 2H / N * AA3[i] * s
     end
-    E2 .= E2 .+ t * fft(II)
-    for i = 1:M
-        II[i] = 2H / N * AA3[i] * sum(view(f0,:, i))
-    end
-    E3 .= E3 .+ t * fft(II)
+    E2 .+= t * fft(AA2)
+    E3 .+= t * fft(AA3)
 
     translation!(f0, v, H)
     translation!(f1, v, H)
@@ -108,3 +105,70 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
     translation!(f3, v, H)
 
 end
+
+
+export HAAOperator
+
+struct HAAOperator
+
+    adv :: Translator
+    A2 :: Vector{Float64}
+    A3 :: Vector{Float64}
+    dA2 :: Vector{ComplexF64}
+    dA3 :: Vector{ComplexF64}
+    delta :: Vector{Float64}
+
+    function HAAOperator(adv)
+
+        A2 = zeros(adv.mesh.M)
+        A3 = zeros(adv.mesh.M)
+        dA2 = zeros(ComplexF64, adv.mesh.M)
+        dA3 = zeros(ComplexF64, adv.mesh.M)
+        delta = zeros(adv.mesh.M)
+
+        new(adv, A2, A3, dA2, dA3, delta)
+
+    end
+
+end
+
+"""
+$(SIGNATURES)
+"""
+function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, t)
+   
+    M = op.adv.mesh.M
+    k = op.adv.mesh.k
+    dv = op.adv.mesh.dv
+
+    op.dA2 .= 1im .* k .* A2
+    ifft!(op.dA2)
+    op.dA3 .= 1im .* k .* A3
+    ifft!(op.dA3)
+    op.A2 .= real(ifft(A2))
+    op.A3 .= real(ifft(A3))
+
+    op.delta .= real(op.dA2) .* op.A2 .+ real(op.dA3) .* op.A3
+    op.delta .*= t 
+
+    for i in 2:M
+        E2[i] += t * k[i]^2 * A2[i]
+        E3[i] += t * k[i]^2 * A3[i]
+    end
+
+    for i = 1:M
+        s = sum(view(f0,:, i))
+        op.A2[i] = dv * op.A2[i] * s
+        op.A3[i] = dv * op.A3[i] * s
+    end
+
+    E2 .+= t * fft(op.A2)
+    E3 .+= t * fft(op.A3)
+
+    translation!(f0, op.adv, op.delta)
+    translation!(f1, op.adv, op.delta)
+    translation!(f2, op.adv, op.delta)
+    translation!(f3, op.adv, op.delta)
+
+end
+
