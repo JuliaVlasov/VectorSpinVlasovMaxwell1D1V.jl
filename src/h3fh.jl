@@ -110,3 +110,74 @@ function H3fh!(f0, f1, f2, f3, E2, A2, t, L, H, h_int)
         E2[i] += t * h_int * 1im * k[i] * sum(view(ff3,:, i)) * 2H / N
     end
 end
+
+
+export H3fhOperator
+
+struct H3fhOperator
+
+    adv :: Translator
+    partial :: Vector{ComplexF64}
+    v1 :: Vector{Float64}
+    v2 :: Vector{Float64}
+    u1 :: Matrix{Float64}
+    u2 :: Matrix{Float64}
+    f3 :: Matrix{ComplexF64}
+
+    function H3fhOperator( adv )
+
+        N, M = adv.mesh.N, adv.mesh.M
+        partial = zeros(ComplexF64, M)
+        v1 = zeros(M)
+        v2 = zeros(M)
+        u1 = zeros(N, M)
+        u2 = zeros(N, M)
+        f3 = zeros(ComplexF64, M, N)
+
+        new(adv, partial, v1, v2, u1, u2, f3)
+
+    end
+
+
+end
+
+
+
+
+"""
+$(SIGNATURES)
+"""
+function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
+   
+    M = op.adv.mesh.M
+    dv = op.adv.mesh.dv
+    k = op.adv.mesh.k
+
+    op.partial .= - k .^ 2 .* A2
+    ifft!(op.partial)
+   
+    op.v1 .= -t .* h_int .* real(op.partial) ./ sqrt(3)
+    op.v2 .= -op.v1
+
+    op.u1 .= 0.5 .* f0 .+ 0.5 .* sqrt(3) .* f3
+    op.u2 .= 0.5 .* f0 .- 0.5 .* sqrt(3) .* f3
+
+    translation!( op.u1, op.adv, op.v1)
+    translation!( op.u2, op.adv, op.v2)
+
+    op.partial .= 1im .* k .* A2
+    ifft!(op.partial)
+
+    transpose!(op.f3, f3)
+
+    f0 .= op.u1 .+ op.u2
+    f3 .= op.u1 ./ sqrt(3) .- op.u2 ./ sqrt(3)
+    f1 .= cos.(t .* real(op.partial')) .* f1 .+ sin.(t .* real(op.partial')) .* f2
+    f2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f2
+    
+    fft!(op.f3,1)
+    
+    for i = 2:M
+        E2[i] += t * h_int * 1im * k[i] * sum(view(op.f3,i, :)) * dv
+    end
+end
