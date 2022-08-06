@@ -1,3 +1,2 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-VectorSpinVlasovMaxwell1D1V = "75377112-00fa-4064-8bf7-257b72a21b57"
