@@ -21,14 +21,20 @@ struct Mesh
     dx :: Float64
     "Size step along v"
     dv :: Float64
+    "points along x direction"
+    x :: Vector{Float64}
+    "points along v direction"
+    v :: Vector{Float64}
 
     function Mesh( N, M, H, L)
 
         dx = L / M
         dv = 2H / N
         k = collect(2π ./ L .* fftfreq(M, M))
+        x = collect((0:(M-1)) .* dx )
+        v = collect((1:N) .* dv .- H )
 
-        new( N, M, H, L, k, dx, dv )
+        new( N, M, H, L, k, dx, dv, x, v )
 
     end
 end
