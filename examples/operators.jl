@@ -1,6 +1,7 @@
 using Plots
 using FFTW
 using ProgressMeter
+using VectorSpinVlasovMaxwell1D1V
 using TimerOutputs
 
 import VectorSpinVlasovMaxwell1D1V: initialfunction
@@ -14,7 +15,7 @@ import VectorSpinVlasovMaxwell1D1V: H1f!
 
 const to = TimerOutput()
 
-function inplace()
+function operators()
 
     T = 50 # 4000  # final time
     M = 65   # partition of x
@@ -29,15 +30,15 @@ function inplace()
     k0 = 2.0 * kkk
     ww = sqrt(1.0 + k0^2.0) # w0
 
-    x = (0:(M-1)) .* L ./ M #mesh in x direction
-    v = (1:N) .* 2 .* H ./ N .- H #mesh in v direction
+    mesh = Mesh(N, M, H, L)
+    adv  = Translator(mesh)
     
     E0 = 0.123 * ww # Eref
-    E1 = fft(a ./ kkk .* sin.(kkk .* x))
-    E2 = fft(E0 .* cos.(k0 .* x))
-    E3 = fft(E0 .* sin.(k0 .* x))
-    A2 = -fft(E0 ./ ww .* sin.(k0 .* x))
-    A3 = fft(E0 ./ ww .* cos.(k0 .* x))
+    E1 = fft(a ./ kkk .* sin.(kkk .* mesh.x))
+    E2 = fft(E0 .* cos.(k0 .* mesh.x))
+    E3 = fft(E0 .* sin.(k0 .* mesh.x))
+    A2 = -fft(E0 ./ ww .* sin.(k0 .* mesh.x))
+    A3 = fft(E0 ./ ww .* cos.(k0 .* mesh.x))
     ata = 0.2
 
 
@@ -68,7 +69,7 @@ function inplace()
     f3 = zeros(N, M)
 
     for k = 1:M, i = 1:N
-        f0[i, k] = initialfunction(x[k], v[i], kkk, a)
+        f0[i, k] = initialfunction(mesh.x[k], mesh.v[i], kkk, a)
     end
     @show size(f0)
     @show size(f3)
@@ -93,9 +94,11 @@ function inplace()
     push!(Tvalue, results[6])
     push!(time, 0.0)
 
+    H2fh = H2fhOperator(adv)
+
     @showprogress 1 for i = 1:NUM # Loop over time
 
-        @timeit to "H2fh" H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
+        @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         @timeit to "He" He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
         @timeit to "HAA" HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
         @timeit to "H3fh" H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
@@ -103,7 +106,7 @@ function inplace()
         @timeit to "H3fh" H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
         @timeit to "HAA" HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
         @timeit to "He" He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
-        @timeit to "H2fh" H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
+        @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         
         # save properties each time interation
         results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
@@ -120,8 +123,7 @@ function inplace()
 
 end
 
-
-time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = inplace()
+time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = operators()
 
 show(to)
 
