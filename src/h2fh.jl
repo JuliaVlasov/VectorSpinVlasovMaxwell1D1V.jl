@@ -99,13 +99,15 @@ function H2fh!(f0::Matrix{Float64}, f1::Matrix{Float64}, f2::Matrix{Float64}, f3
 
     translation!( u1, v1, H)
     translation!( u2, v2, H)
+
+    ff2 = complex(f2)
+
     f0 .= u1 .+ u2
     f2 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
     f1 .= cos.(t .* real(partialA3')) .* f1 .+ sin.(t .* real(partialA3')) .* f3
     f3 .= -sin.(t .* real(partialA3')) .* f1 .+ cos.(t .* real(partialA3')) .* f3
     
-    ff2 = complex(f2)
     fft!(ff2, 2)
     #cpmputation of E3
-    E3 .= E3 .- t .* h_int .* (1im .* k ) .* vec(sum(ff2, dims=1)) .* 2 .* H ./ N
+    E3 .-= t .* h_int .* (1im .* k ) .* vec(sum(ff2, dims=1)) .* 2 .* H ./ N
 end

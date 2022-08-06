@@ -68,7 +68,6 @@ function HAA(f0, f1, f2, f3, E2, E3, A2, A3, t, M, N, L, H)
 end
 
 
-
 """
 $(SIGNATURES)
 """
@@ -76,42 +75,30 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
    
     N, M = size(f0)
 
-    # compute the subsystem HA
-    #####################################################
-    #use FFT to compute A2_x; A3_x
-    partialA2 = zeros(ComplexF64, M)
-    partialA3 = zeros(ComplexF64, M)
     k = fftfreq(M, M) .* 2pi ./ L
-    partialA2 .= 1im .* k .* A2
+    partialA2 = 1im .* k .* A2
     ifft!(partialA2)
-    partialA3 .= 1im .* k .* A3
+    partialA3 = 1im .* k .* A3
     ifft!(partialA3)
-    AA = real(ifft(A2))
-    AAA = real(ifft(A3))
+    AA2 = real(ifft(A2))
+    AA3 = real(ifft(A3))
+
     # solve transport problem in v direction by Semi-Lagrangain method
     nonlinear = real(partialA2) .* (real(ifft(A2))) .+ real(partialA3) .* (real(ifft(A3)))
     v = t .* nonlinear
 
-    #cpmputation of E2
-    value1 = 2:(M-1)÷2+1
-    value2 = (M-1)÷2+2:M
-    E2[value1] .= E2[value1] .+ t * ((2pi / L * (value1 .- 1)) .^ 2) .* A2[value1]
-    E2[value2] .= E2[value2] .+ t * ((2pi / L * (value2 .- M .- 1)) .^ 2) .* A2[value2]
-    E2[1] = E2[1]
-    #cpmputation of E3
-    E3[value1] .= E3[value1] .+ t * ((2pi / L * (value1 .- 1)) .^ 2) .* A3[value1]
-    E3[value2] .= E3[value2] .+ t * ((2pi / L * (value2 .- M .- 1)) .^ 2) .* A3[value2]
-    E3[1] = E3[1]
-    ################################
+    for i in 2:M
+        E2[i] += t * k[i]^2 * A2[i]
+        E3[i] += t * k[i]^2 * A3[i]
+    end
 
     II = zeros(M)
     for i = 1:M
-        II[i] = 2 * H / N * AA[i] * sum(f0[:, i])
+        II[i] = 2H / N * AA2[i] * sum(view(f0,:, i))
     end
     E2 .= E2 .+ t * fft(II)
-    ################################
     for i = 1:M
-        II[i] = 2 * H / N * AAA[i] * sum(f0[:, i])
+        II[i] = 2H / N * AA3[i] * sum(view(f0,:, i))
     end
     E3 .= E3 .+ t * fft(II)
 

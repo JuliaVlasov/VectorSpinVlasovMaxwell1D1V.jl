@@ -3,6 +3,7 @@ module VectorSpinVlasovMaxwell1D1V
 using DocStringExtensions
 using FFTW
 
+include("mesh.jl")
 include("initialfunction.jl")
 include("numeint.jl")
 include("diagnostics.jl")
