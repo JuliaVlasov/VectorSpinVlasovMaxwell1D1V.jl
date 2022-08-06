@@ -11,7 +11,7 @@ import VectorSpinVlasovMaxwell1D1V: HAA!
 import VectorSpinVlasovMaxwell1D1V: H3fh!
 import VectorSpinVlasovMaxwell1D1V: H1f!
 
-function new_main()
+function inplace()
 
     T = 20 # 4000  # final time
     M = 65   # partition of x
@@ -118,7 +118,7 @@ function new_main()
 end
 
 
-@time time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = new_main()
+@time time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = inplace()
 
 plot(time, Ex_energy)
 #plot(time, E_energy)
