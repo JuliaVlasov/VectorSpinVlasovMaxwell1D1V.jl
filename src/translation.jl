@@ -25,7 +25,7 @@ function translation!(df, delta, H)
 
     @inbounds for j = 1:M
 
-        f1[2:N] .= df[1:N-1,j] .+ df[2:N, j]
+        f1[2:N] .= view(df,1:N-1,j) .+ view(df,2:N, j)
         f1[1] = df[1,j]
         f1[N+1] = df[N,j]
         # get result
@@ -35,15 +35,15 @@ function translation!(df, delta, H)
             cc[i] = (-1)^i * (c[i] - c[i-1])
         end
         for i = 2:N
-            b[i] = (-1)^i * 2 * sum(cc[2:i])
+            b[i] = (-1)^i * 2 * sum(view(cc,2:i))
         end
         b[1] = 0
-        a[1:N-1] .= 1 / 2 .* (b[2:N] .- b[1:N-1])
+        a[1:N-1] .= 1 / 2 .* (view(b,2:N) .- view(b,1:N-1))
         a[N] = -1 / 2 * b[N]
 
         for i = 1:N
 
-            beta = i + delta[j] / (2 * H / N)
+            beta = i + delta[j] / (2H / N)
             loopnumber = floor(Int, beta / N)
             newbeta = beta - N * loopnumber
 

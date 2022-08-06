@@ -39,17 +39,13 @@ function He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, t, H)
 
     A2 .= A2 .- t .* E2
     A3 .= A3 .- t .* E3
-    #####################################################
-    #computation of how much we should translate in the direction v1; & v2
-    translatevaluev = -t .* real(ifft(E1))
-    #####################################################
+    
+    e = -t .* real(ifft(E1))
 
-    # translate in v direction
-    translation!(f0, translatevaluev, H)
-    translation!(f1, translatevaluev, H)
-    translation!(f2, translatevaluev, H)
-    translation!(f3, translatevaluev, H)
-    #####################################################
+    translation!(f0, e, H)
+    translation!(f1, e, H)
+    translation!(f2, e, H)
+    translation!(f3, e, H)
 
 end
 

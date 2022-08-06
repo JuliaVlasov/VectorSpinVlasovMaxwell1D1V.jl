@@ -13,7 +13,7 @@ import VectorSpinVlasovMaxwell1D1V: H1f!
 
 function new_main()
 
-    T = 10 # 4000  # final time
+    T = 100 # 4000  # final time
     M = 65   # partition of x
     N = 129   # partition of v
     H = 5.0 / 2   # v domain size()
@@ -27,8 +27,8 @@ function new_main()
     ww = sqrt(1.0 + k0^2.0) # w0
 
     x = (0:(M-1)) .* L ./ M #mesh in x direction
-    v1 = (1:N) .* 2 .* H ./ N .- H #mesh in v direction
-    tmp = zeros(M)
+    v = (1:N) .* 2 .* H ./ N .- H #mesh in v direction
+    
     E0 = 0.123 * ww # Eref
     E1 = fft(a ./ kkk .* sin.(kkk .* x))
     E2 = fft(E0 .* cos.(k0 .* x))
@@ -37,27 +37,26 @@ function new_main()
     A3 = fft(E0 ./ ww .* cos.(k0 .* x))
     ata = 0.2
 
-    # spin related coefficient
-    # 5 nodes in each cell in v direction
-    v1node = zeros(5N)
-    for i = 1:N
-        v1node[5*i-4] = v1[i] - 2 * H / N
-        v1node[5*i-3] = v1[i] - (2 * H / N) * 3 / 4
-        v1node[5*i-2] = v1[i] - (2 * H / N) * 1 / 2
-        v1node[5*i-1] = v1[i] - (2 * H / N) * 1 / 4
-        v1node[5*i] = v1[i]
-    end
-    # initialize the solution: the interal at each cell in v direction
-    f0_value_at_node = zeros(5N, M)
-    f1_value_at_node = zeros(5N, M)
-    f2_value_at_node = zeros(5N, M)
-    f3_value_at_node = zeros(5N, M)
 
-    for k = 1:M, i = 1:5N
-        f0_value_at_node[i, k] = initialfunction(k, x, i, v1node, kkk, a)
-        f1_value_at_node[i, k] = 0.0
-        f2_value_at_node[i, k] = 0.0
-        f3_value_at_node[i, k] = (ata / 3.0) * f0_value_at_node[i, k]
+    function initialfunction(x, v, frequency, a)
+    
+        kk = 0.17 # v_th
+        f(x, v) = (1 / sqrt(2pi) / kk) * exp(-(v^2 / 2 / kk / kk)) * (1 + a * cos(frequency * x))
+
+        v1 = v - H / N
+        v2 = v - H / 2N
+        v3 = v 
+        v4 = v + H / 2N
+        v5 = v + H / N
+
+        y1 = f(x, v1)
+        y2 = f(x, v2)
+        y3 = f(x, v3)
+        y4 = f(x, v4)
+        y5 = f(x, v5)
+
+        return 7 / 90 * y1 + 16 / 45 * y2 + 2 / 15 * y3 + 16 / 45 * y4 + 7 / 90 * y5
+    
     end
 
     f0 = zeros(N, M)
@@ -65,12 +64,13 @@ function new_main()
     f2 = zeros(N, M)
     f3 = zeros(N, M)
 
-    for k = 1:M
-        f0[:, k] .= numeint(f0_value_at_node[:, k], N)
-        f1[:, k] .= numeint(f1_value_at_node[:, k], N)
-        f2[:, k] .= numeint(f2_value_at_node[:, k], N)
-        f3[:, k] .= numeint(f3_value_at_node[:, k], N)
+    for k = 1:M, i = 1:N
+        f0[i, k] = initialfunction(x[k], v[i], kkk, a)
     end
+    @show size(f0)
+    @show size(f3)
+
+    f3 .= ata ./ 3.0 .* f0
 
     # test several properties include electric energy; total energy; spectrum etc. save initial data
     Ex_energy = Float64[]
