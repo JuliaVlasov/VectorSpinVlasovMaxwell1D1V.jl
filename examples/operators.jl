@@ -95,17 +95,18 @@ function operators()
     push!(time, 0.0)
 
     H2fh = H2fhOperator(adv)
+    He = HeOperator(adv)
 
     @showprogress 1 for i = 1:NUM # Loop over time
 
         @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
-        @timeit to "He" He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
+        @timeit to "He" step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
         @timeit to "HAA" HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
         @timeit to "H3fh" H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
         @timeit to "H1f" H1f!(f0, f1, f2, f3, E1, h, L, H)
         @timeit to "H3fh" H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
         @timeit to "HAA" HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
-        @timeit to "He" He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
+        @timeit to "He" step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
         @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         
         # save properties each time interation
