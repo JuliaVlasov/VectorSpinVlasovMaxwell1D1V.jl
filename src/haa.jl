@@ -81,22 +81,16 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
     #use FFT to compute A2_x; A3_x
     partialA2 = zeros(ComplexF64, M)
     partialA3 = zeros(ComplexF64, M)
-    value1 = 1:(M-1)÷2+1
-    value2 = (M-1)÷2+2:M
-    partialA2[value1] .= (((2pi * 1im / L .* (value1 .- 1))) .* A2[value1])
-    partialA2[value2] .= (((2pi * 1im / L .* (value2 .- M .- 1))) .* A2[value2])
-    partialA2 .= real(ifft(partialA2))
-    partialA3[value1] .= (((2pi * 1im / L .* (value1 .- 1))) .* A3[value1])
-    partialA3[value2] .= (((2pi * 1im / L .* (value2 .- M .- 1))) .* A3[value2])
-    partialA3 .= real(ifft(partialA3))
+    k = fftfreq(M, M) .* 2pi ./ L
+    partialA2 .= 1im .* k .* A2
+    ifft!(partialA2)
+    partialA3 .= 1im .* k .* A3
+    ifft!(partialA3)
     AA = real(ifft(A2))
     AAA = real(ifft(A3))
     # solve transport problem in v direction by Semi-Lagrangain method
-    translatorv1 = zeros(M)
     nonlinear = real(partialA2) .* (real(ifft(A2))) .+ real(partialA3) .* (real(ifft(A3)))
-    for i = 1:M
-        translatorv1[i] = t * nonlinear[i]
-    end
+    v = t .* nonlinear
 
     #cpmputation of E2
     value1 = 2:(M-1)÷2+1
@@ -121,9 +115,9 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
     end
     E3 .= E3 .+ t * fft(II)
 
-    translation!(f0, translatorv1, H)
-    translation!(f1, translatorv1, H)
-    translation!(f2, translatorv1, H)
-    translation!(f3, translatorv1, H)
+    translation!(f0, v, H)
+    translation!(f1, v, H)
+    translation!(f2, v, H)
+    translation!(f3, v, H)
 
 end
