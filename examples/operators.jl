@@ -18,7 +18,7 @@ const to = TimerOutput()
 function operators()
 
     T = 50 # 4000  # final time
-    M = 65   # partition of x
+    M = 129   # partition of x
     N = 129   # partition of v
     H = 5.0 / 2   # v domain size()
     kkk = 1.2231333040331807  #ke
@@ -98,6 +98,7 @@ function operators()
     He = HeOperator(adv)
     HAA = HAAOperator(adv)
     H3fh = H3fhOperator(adv)
+    H1f = H1fOperator(adv)
 
     @showprogress 1 for i = 1:NUM # Loop over time
 
@@ -105,14 +106,14 @@ function operators()
         @timeit to "He" step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
         @timeit to "HAA" step!(f0, f1, f2, f3, E2, E3, A2, A3, HAA, h/2)
         @timeit to "H3fh" step!(f0, f1, f2, f3, E2, A2, H3fh, h/2, h_int)
-        @timeit to "H1f" H1f!(f0, f1, f2, f3, E1, h, L, H)
+        @timeit to "H1f" step!(f0, f1, f2, f3, E1, H1f, h)
         @timeit to "H3fh" step!(f0, f1, f2, f3, E2, A2, H3fh, h/2, h_int)
         @timeit to "HAA" step!(f0, f1, f2, f3, E2, E3, A2, A3, HAA, h/2)
         @timeit to "He" step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
         @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         
         # save properties each time interation
-        results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
+        @timeit to "diagnostics" results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
         push!(Ex_energy, results[1])
         push!(E_energy, results[2])
         push!(B_energy, results[3])

@@ -1,3 +1,5 @@
+export diagnostics
+
 function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
 
     value1 = 1:(M-1)÷2 .+ 1

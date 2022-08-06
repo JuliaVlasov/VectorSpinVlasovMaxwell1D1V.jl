@@ -1,23 +1,15 @@
+# Example
+
+
+```@example test
 using Plots
 using FFTW
-using ProgressMeter
-using TimerOutputs
+using VectorSpinVlasovMaxwell1D1V
 
-import VectorSpinVlasovMaxwell1D1V: initialfunction
-import VectorSpinVlasovMaxwell1D1V: numeint
-import VectorSpinVlasovMaxwell1D1V: diagnostics
-import VectorSpinVlasovMaxwell1D1V: H2fh!
-import VectorSpinVlasovMaxwell1D1V: He!
-import VectorSpinVlasovMaxwell1D1V: HAA!
-import VectorSpinVlasovMaxwell1D1V: H3fh!
-import VectorSpinVlasovMaxwell1D1V: H1f!
-
-const to = TimerOutput()
-
-function inplace()
+function run()
 
     T = 50 # 4000  # final time
-    M = 129   # partition of x
+    M = 65   # partition of x
     N = 129   # partition of v
     H = 5.0 / 2   # v domain size()
     kkk = 1.2231333040331807  #ke
@@ -29,15 +21,15 @@ function inplace()
     k0 = 2.0 * kkk
     ww = sqrt(1.0 + k0^2.0) # w0
 
-    x = (0:(M-1)) .* L ./ M #mesh in x direction
-    v = (1:N) .* 2 .* H ./ N .- H #mesh in v direction
+    mesh = Mesh(N, M, H, L)
+    adv  = Translator(mesh)
     
     E0 = 0.123 * ww # Eref
-    E1 = fft(a ./ kkk .* sin.(kkk .* x))
-    E2 = fft(E0 .* cos.(k0 .* x))
-    E3 = fft(E0 .* sin.(k0 .* x))
-    A2 = -fft(E0 ./ ww .* sin.(k0 .* x))
-    A3 = fft(E0 ./ ww .* cos.(k0 .* x))
+    E1 = fft(a ./ kkk .* sin.(kkk .* mesh.x))
+    E2 = fft(E0 .* cos.(k0 .* mesh.x))
+    E3 = fft(E0 .* sin.(k0 .* mesh.x))
+    A2 = -fft(E0 ./ ww .* sin.(k0 .* mesh.x))
+    A3 = fft(E0 ./ ww .* cos.(k0 .* mesh.x))
     ata = 0.2
 
 
@@ -68,7 +60,7 @@ function inplace()
     f3 = zeros(N, M)
 
     for k = 1:M, i = 1:N
-        f0[i, k] = initialfunction(x[k], v[i], kkk, a)
+        f0[i, k] = initialfunction(mesh.x[k], mesh.v[i], kkk, a)
     end
     @show size(f0)
     @show size(f3)
@@ -93,19 +85,24 @@ function inplace()
     push!(Tvalue, results[6])
     push!(time, 0.0)
 
-    @showprogress 1 for i = 1:NUM # Loop over time
+    H2fh = H2fhOperator(adv)
+    He = HeOperator(adv)
+    HAA = HAAOperator(adv)
+    H3fh = H3fhOperator(adv)
+    H1f = H1fOperator(adv)
 
-        @timeit to "H2fh" H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
-        @timeit to "He" He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
-        @timeit to "HAA" HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
-        @timeit to "H3fh" H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
-        @timeit to "H1f" H1f!(f0, f1, f2, f3, E1, h, L, H)
-        @timeit to "H3fh" H3fh!(f0, f1, f2, f3, E2, A2, h/2, L, H, h_int)
-        @timeit to "HAA" HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h/2, L, H)
-        @timeit to "He" He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, H)
-        @timeit to "H2fh" H2fh!(f0, f1, f2, f3, E3, A3, h/2, L, H, h_int)
+    for i = 1:NUM # Loop over time
+
+        step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
+        step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
+        step!(f0, f1, f2, f3, E2, E3, A2, A3, HAA, h/2)
+        step!(f0, f1, f2, f3, E2, A2, H3fh, h/2, h_int)
+        step!(f0, f1, f2, f3, E1, H1f, h)
+        step!(f0, f1, f2, f3, E2, A2, H3fh, h/2, h_int)
+        step!(f0, f1, f2, f3, E2, E3, A2, A3, HAA, h/2)
+        step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
+        step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         
-        # save properties each time interation
         results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
         push!(Ex_energy, results[1])
         push!(E_energy, results[2])
@@ -114,17 +111,34 @@ function inplace()
         push!(Sz, results[5])
         push!(Tvalue, results[6])
         push!(time, i*h)
+
     end
 
     time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue
 
 end
+```
 
+```@example test
+time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = run()
+```
 
-time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = inplace()
-
-show(to)
-
+```@example test
 plot(time, Ex_energy)
-#plot(time, E_energy)
-#plot(time, B_energy)
+```
+
+```@example test
+plot(time, E_energy)
+```
+
+```@example test
+plot(time, B_energy)
+```
+
+```@example test
+plot(time, energy)
+```
+
+```@example test
+plot(time, Sz)
+```
