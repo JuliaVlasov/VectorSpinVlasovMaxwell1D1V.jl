@@ -1,5 +1,6 @@
 using Plots
 using FFTW
+using MAT
 using ProgressMeter
 
 import VectorSpinVlasovMaxwell1D1V: initialfunction
@@ -120,4 +121,9 @@ end
 
 @time time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = main()
 
-plot(time, Ex_energy)
+plot(time, Ex_energy, label="julia v1")
+
+
+vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
+
+plot!(vec(vars["time"]), vec(vars["Ex_energy"]), label="matlab")

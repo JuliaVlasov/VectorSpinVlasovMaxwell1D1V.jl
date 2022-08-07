@@ -1,5 +1,6 @@
 using VectorSpinVlasovMaxwell1D1V
 using FFTW
+using MAT
 using Test
 
 import VectorSpinVlasovMaxwell1D1V: initialfunction, numeint
@@ -22,21 +23,21 @@ const ww = sqrt(1.0 + k0^2.0) # w0
 const ata = 0.2
 const kk = 0.17 # v_th
 
-f(x, v) = exp(-0.5 * v^2 / kk^2) * (1 + a * cos(kkk * x)) / sqrt(2π) / kk
+df(x, v) = exp(-0.5 * v^2 / kk^2) * (1 + a * cos(kkk * x)) / sqrt(2π) / kk
 
 function initialfunction(x, v)
 
-    v1 = v - H / N
+    v1 = v - 2H / N
     v2 = v - H / 2N
     v3 = v
     v4 = v + H / 2N
     v5 = v + H / N
 
-    y1 = f(x, v1)
-    y2 = f(x, v2)
-    y3 = f(x, v3)
-    y4 = f(x, v4)
-    y5 = f(x, v5)
+    y1 = df(x, v1)
+    y2 = df(x, v2)
+    y3 = df(x, v3)
+    y4 = df(x, v4)
+    y5 = df(x, v5)
 
     return 7 / 90 * y1 + 16 / 45 * y2 + 2 / 15 * y3 + 16 / 45 * y4 + 7 / 90 * y5
 
@@ -79,10 +80,10 @@ end
     # 5 nodes in each cell in v direction
     v1node = zeros(5N)
     for i = 1:N
-        v1node[5*i-4] = v1[i] - 2 * H / N
-        v1node[5*i-3] = v1[i] - (2 * H / N) * 3 / 4
-        v1node[5*i-2] = v1[i] - (2 * H / N) * 1 / 2
-        v1node[5*i-1] = v1[i] - (2 * H / N) * 1 / 4
+        v1node[5*i-4] = v1[i] - 2H / N
+        v1node[5*i-3] = v1[i] - (2H / N) * 3 / 4
+        v1node[5*i-2] = v1[i] - (2H / N) / 2
+        v1node[5*i-1] = v1[i] - (2H / N) / 4
         v1node[5*i] = v1[i]
     end
     # initialize the solution: the interal at each cell in v direction
@@ -124,6 +125,14 @@ end
     A2 = -fft(E0 ./ ww .* sin.(k0 .* mesh.x))
     A3 = fft(E0 ./ ww .* cos.(k0 .* mesh.x))
 
+    fields = matread("fields0.mat")
+
+    @test E1 ≈ fields["E1"]
+    @test E2 ≈ fields["E2"]
+    @test E3 ≈ fields["E3"]
+    @test A2 ≈ fields["A2"]
+    @test A3 ≈ fields["A3"]
+
     f0 = zeros(N, M)
     f1 = zeros(N, M)
     f2 = zeros(N, M)
@@ -132,6 +141,8 @@ end
     for k = 1:M, i = 1:N
         f0[i, k] = initialfunction(mesh.x[k], mesh.v[i])
     end
+
+    fields = matread("fields0.mat")
 
     f3 .= ata ./ 3.0 .* f0
 

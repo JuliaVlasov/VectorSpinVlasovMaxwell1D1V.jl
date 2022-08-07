@@ -2,6 +2,7 @@ using Plots
 using FFTW
 using ProgressMeter
 using TimerOutputs
+using MAT
 
 import VectorSpinVlasovMaxwell1D1V: initialfunction
 import VectorSpinVlasovMaxwell1D1V: numeint
@@ -40,36 +41,39 @@ function inplace()
     A3 = fft(E0 ./ ww .* cos.(k0 .* x))
     ata = 0.2
 
+    kk = 0.17 # v_th
+    f(x, v) = (1 / sqrt(2pi) / kk) * exp(-(v^2 / 2 / kk / kk)) * (1 + a * cos(kkk * x))
 
-    function initialfunction(x, v, frequency, a)
-
-        kk = 0.17 # v_th
-        f(x, v) =
-            (1 / sqrt(2pi) / kk) * exp(-(v^2 / 2 / kk / kk)) * (1 + a * cos(frequency * x))
-
-        v1 = v - H / N
-        v2 = v - H / 2N
-        v3 = v
-        v4 = v + H / 2N
-        v5 = v + H / N
-
-        y1 = f(x, v1)
-        y2 = f(x, v2)
-        y3 = f(x, v3)
-        y4 = f(x, v4)
-        y5 = f(x, v5)
-
-        return 7 / 90 * y1 + 16 / 45 * y2 + 2 / 15 * y3 + 16 / 45 * y4 + 7 / 90 * y5
-
-    end
 
     f0 = zeros(N, M)
     f1 = zeros(N, M)
     f2 = zeros(N, M)
     f3 = zeros(N, M)
 
-    for k = 1:M, i = 1:N
-        f0[i, k] = initialfunction(x[k], v[i], kkk, a)
+    for k = 1:M
+
+        s = 0
+
+        for i = 1:N
+
+            v1 = v[k] - 2H / N
+            v2 = v[k] - 2H / N * 3 / 4
+            v3 = v[k] - 2H / N / 2
+            v4 = v[k] - 2H / N / 4
+            v5 = v[k] 
+
+            y1 = f(x[i], v1)
+            y2 = f(x[i], v2)
+            y3 = f(x[i], v3)
+            y4 = f(x[i], v4)
+            y5 = f(x[i], v5)
+
+            s += (7y1 + 32y2 + 12y3 + 32y4 + 7y5) / 90
+
+            f0[i,k] = s
+
+        end
+
     end
 
     f3 .= ata ./ 3.0 .* f0
@@ -124,6 +128,8 @@ time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = inplace()
 
 show(to)
 
-plot(time, Ex_energy)
-#plot(time, E_energy)
-#plot(time, B_energy)
+plot(time, Ex_energy, label="julia v2")
+
+vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
+
+plot!(vec(vars["time"]), vec(vars["Ex_energy"]), label="matlab")

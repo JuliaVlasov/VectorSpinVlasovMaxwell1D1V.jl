@@ -56,7 +56,6 @@ function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
     Sz = sum(f3) * dx * dv
     return Ex_energy, E_energy, B_energy, energy, Sz, Tt
 end
-#=
 
 function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
 
@@ -127,4 +126,3 @@ energy = energy1 + energy2
 Sz = sum(f3) * L / M * (2 * H / N)
 return Ex_energy, E_energy, B_energy, energy, Sz, Tvaluet
 end
-=#

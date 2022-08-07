@@ -130,7 +130,8 @@ end
 time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = operators()
 
 show(to)
+plot(time, Ex_energy, label="julia v3")
 
-plot(time, Ex_energy)
-#plot(time, E_energy)
-#plot(time, B_energy)
+vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
+
+plot!(vec(vars["time"]), vec(vars["Ex_energy"]), label="matlab")
