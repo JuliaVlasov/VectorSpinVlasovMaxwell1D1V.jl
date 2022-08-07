@@ -67,7 +67,6 @@ function run()
 
     f3 .= ata ./ 3.0 .* f0
 
-    # test several properties include electric energy; total energy; spectrum etc. save initial data
     Ex_energy = Float64[]
     E_energy = Float64[]
     B_energy = Float64[]
@@ -76,7 +75,7 @@ function run()
     Tvalue = Vector{Float64}[]
     time = Float64[]
 
-    results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
+    results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
     push!(Ex_energy, results[1])
     push!(E_energy, results[2])
     push!(B_energy, results[3])
@@ -103,7 +102,7 @@ function run()
         step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
         step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         
-        results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
+        results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
         push!(Ex_energy, results[1])
         push!(E_energy, results[2])
         push!(B_energy, results[3])
