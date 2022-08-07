@@ -64,13 +64,13 @@ end
     @test A3 ≈ fft(E0 ./ ww .* cos.(k0 .* mesh.x))
 
     f0 = zeros(N, M)
-    for k = 1:M, i = 1:5N
+    for k = 1:M, i = 1:N
         f0[i, k] = initialfunction(k, x, i, v1, kkk, a)
     end
 
     f0test = similar(f0)
     for k = 1:M, i = 1:N
-        f0test[i, k] = initialfunction(mesh.x[k], mesh.v[i])
+        f0test[i, k] = f(mesh.x[k], mesh.v[i])
     end
 
     @test f0test ≈ f0
@@ -86,14 +86,14 @@ end
         v1node[5*i] = v1[i]
     end
     # initialize the solution: the interal at each cell in v direction
-    f0_value_at_node = zeros(5N, M)
+    f0node = zeros(5N, M)
 
     for k = 1:M, i = 1:5N
-        f0_value_at_node[i, k] = initialfunction(k, x, i, v1node, kkk, a)
+        f0node[i, k] = initialfunction(k, x, i, v1node, kkk, a)
     end
     f0 = zeros(N, M)
     for k = 1:M
-        f0[:, k] .= numeint(f0_value_at_node[:, k], N)
+        f0[:, k] .= numeint(f0node[:, k], N)
     end
 
 
@@ -130,7 +130,7 @@ end
     f3 = zeros(N, M)
 
     for k = 1:M, i = 1:N
-        f0[i, k] = initialfunction(mesh.x[k], mesh.v[i], kkk, a)
+        f0[i, k] = initialfunction(mesh.x[k], mesh.v[i])
     end
 
     f3 .= ata ./ 3.0 .* f0
