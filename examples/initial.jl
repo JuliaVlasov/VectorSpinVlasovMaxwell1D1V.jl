@@ -13,8 +13,8 @@ import VectorSpinVlasovMaxwell1D1V: H1f
 
 function main()
 
-    T = 10 # 4000  # final time
-    M = 65   # partition of x
+    T = 50 # 4000  # final time
+    M = 129   # partition of x
     N = 129   # partition of v
     H = 5.0 / 2   # v domain size()
     kkk = 1.2231333040331807  #ke
@@ -92,16 +92,16 @@ function main()
 
     @showprogress 1 for i = 1:NUM # Loop over time
 
-        f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h/2, M, N, L, H, h_int)
-        f0, f1, f2, f3, A2, A3 = He(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, M, N, H)
-        f0, f1, f2, f3, E2, E3 = HAA(f0, f1, f2, f3, E2, E3, A2, A3, h/2, M, N, L, H)
-        f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h/2, M, N, L, H, h_int)
+        f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h / 2, M, N, L, H, h_int)
+        f0, f1, f2, f3, A2, A3 = He(f0, f1, f2, f3, E1, E2, E3, A2, A3, h / 2, M, N, H)
+        f0, f1, f2, f3, E2, E3 = HAA(f0, f1, f2, f3, E2, E3, A2, A3, h / 2, M, N, L, H)
+        f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h / 2, M, N, L, H, h_int)
         f0, f1, f2, f3, E1 = H1f(f0, f1, f2, f3, E1, h, M, N, L, H)
-        f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h/2, M, N, L, H, h_int)
-        f0, f1, f2, f3, E2, E3 = HAA(f0, f1, f2, f3, E2, E3, A2, A3, h/2, M, N, L, H)
-        f0, f1, f2, f3, A2, A3 = He(f0, f1, f2, f3, E1, E2, E3, A2, A3, h/2, M, N, H)
-        f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h/2, M, N, L, H, h_int)
-        
+        f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h / 2, M, N, L, H, h_int)
+        f0, f1, f2, f3, E2, E3 = HAA(f0, f1, f2, f3, E2, E3, A2, A3, h / 2, M, N, L, H)
+        f0, f1, f2, f3, A2, A3 = He(f0, f1, f2, f3, E1, E2, E3, A2, A3, h / 2, M, N, H)
+        f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h / 2, M, N, L, H, h_int)
+
         # save properties each time interation
         results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
         push!(Ex_energy, results[1])
@@ -110,7 +110,7 @@ function main()
         push!(energy, results[4])
         push!(Sz, results[5])
         push!(Tvalue, results[6])
-        push!(time, i*h)
+        push!(time, i * h)
     end
 
     time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue

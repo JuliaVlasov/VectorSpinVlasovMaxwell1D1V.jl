@@ -19,7 +19,7 @@ function He(f0, f1, f2, f3, E1, E2, E3, A2, A3, t, M, N, H)
         f2[:, j] .= translation((f2[:, j]), N, translatevaluev[j] .* ones(N), H)
         f3[:, j] .= translation((f3[:, j]), N, translatevaluev[j] .* ones(N), H)
     end
-    
+
     f0t = copy(f0)
     f1t = copy(f1)
     f2t = copy(f2)
@@ -39,7 +39,7 @@ function He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, t, H)
 
     A2 .= A2 .- t .* E2
     A3 .= A3 .- t .* E3
-    
+
     e = -t .* real(ifft(E1))
 
     translation!(f0, e, H)
@@ -53,8 +53,8 @@ export HeOperator
 
 struct HeOperator
 
-    adv :: Translator
-    e :: Vector{Float64}
+    adv::Translator
+    e::Vector{Float64}
 
     function HeOperator(adv)
 
@@ -73,11 +73,11 @@ $(SIGNATURES)
 compute the first subsystem He()
 - M is odd number
 """
-function step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, op :: HeOperator, t)
+function step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, op::HeOperator, t)
 
     A2 .-= t .* E2
     A3 .-= t .* E3
-    
+
     op.e .= -t .* real(ifft(E1))
 
     translation!(f0, op.adv, op.e)

@@ -41,14 +41,14 @@ function HAA(f0, f1, f2, f3, E2, E3, A2, A3, t, M, N, L, H)
     #####################################################
 
     #cpmputation of E2
-    E2t = zeros(ComplexF64,M)
+    E2t = zeros(ComplexF64, M)
     value1 = 2:(M-1)÷2+1
     value2 = (M-1)÷2+2:M
     E2t[value1] .= E2[value1] .+ t * ((2pi / L * (value1 .- 1)) .^ 2) .* A2[value1]
     E2t[value2] .= E2[value2] .+ t * ((2pi / L * (value2 .- M .- 1)) .^ 2) .* A2[value2]
     E2t[1] = E2[1]
     #cpmputation of E3
-    E3t = zeros(ComplexF64,M)
+    E3t = zeros(ComplexF64, M)
     E3t[value1] .= E3[value1] .+ t * ((2pi / L * (value1 .- 1)) .^ 2) .* A3[value1]
     E3t[value2] .= E3[value2] .+ t * ((2pi / L * (value2 .- M .- 1)) .^ 2) .* A3[value2]
     E3t[1] = E3[1]
@@ -72,7 +72,7 @@ end
 $(SIGNATURES)
 """
 function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
-   
+
     N, M = size(f0)
 
     k = fftfreq(M, M) .* 2pi ./ L
@@ -84,15 +84,15 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
     AA3 = real(ifft(A3))
 
     v = real(partialA2) .* AA2 .+ real(partialA3) .* AA3
-    v .*= t 
+    v .*= t
 
-    for i in 2:M
+    for i = 2:M
         E2[i] += t * k[i]^2 * A2[i]
         E3[i] += t * k[i]^2 * A3[i]
     end
 
     for i = 1:M
-        s = sum(view(f0,:, i))
+        s = sum(view(f0, :, i))
         AA2[i] = 2H / N * AA2[i] * s
         AA3[i] = 2H / N * AA3[i] * s
     end
@@ -111,12 +111,12 @@ export HAAOperator
 
 struct HAAOperator
 
-    adv :: Translator
-    A2 :: Vector{Float64}
-    A3 :: Vector{Float64}
-    dA2 :: Vector{ComplexF64}
-    dA3 :: Vector{ComplexF64}
-    delta :: Vector{Float64}
+    adv::Translator
+    A2::Vector{Float64}
+    A3::Vector{Float64}
+    dA2::Vector{ComplexF64}
+    dA3::Vector{ComplexF64}
+    delta::Vector{Float64}
 
     function HAAOperator(adv)
 
@@ -136,7 +136,7 @@ end
 $(SIGNATURES)
 """
 function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, t)
-   
+
     M = op.adv.mesh.M
     k = op.adv.mesh.k
     dv = op.adv.mesh.dv
@@ -149,15 +149,15 @@ function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, t)
     op.A3 .= real(ifft(A3))
 
     op.delta .= real(op.dA2) .* op.A2 .+ real(op.dA3) .* op.A3
-    op.delta .*= t 
+    op.delta .*= t
 
-    for i in 2:M
+    for i = 2:M
         E2[i] += t * k[i]^2 * A2[i]
         E3[i] += t * k[i]^2 * A3[i]
     end
 
     for i = 1:M
-        s = sum(view(f0,:, i))
+        s = sum(view(f0, :, i))
         op.A2[i] = dv * op.A2[i] * s
         op.A3[i] = dv * op.A3[i] * s
     end
@@ -171,4 +171,3 @@ function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, t)
     translation!(f3, op.adv, op.delta)
 
 end
-

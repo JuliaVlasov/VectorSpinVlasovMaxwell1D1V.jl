@@ -60,7 +60,9 @@ function H1f(f0, f1, f2, f3, E1, t, M, N, L, H)
         E1t[i] =
             E1[i] +
             L / (1im * 2pi * k) *
-            sum(ff0[:, i] .* (exp.(-1im * 2pi / L * k * t .* v) .- 1.0)) * 2 * H / N
+            sum(ff0[:, i] .* (exp.(-1im * 2pi / L * k * t .* v) .- 1.0)) *
+            2 *
+            H / N
     end
     # sum(abs(tmp))
     # tmp
@@ -90,21 +92,23 @@ function H1f!(f0, f1, f2, f3, E1, t, L, H)
     # M is odd; odd frequency number
     k = 2pi / L .* [0:(M-1)÷2; -(M - 1)÷2:-1]
     # FFT in x direction to solve f_t+v f_x=0
-    ff0 .*= exp.(- 1im * k .* v' * t)
-    ff1 .*= exp.(- 1im * k .* v' * t)
-    ff2 .*= exp.(- 1im * k .* v' * t)
-    ff3 .*= exp.(- 1im * k .* v' * t)
+    ff0 .*= exp.(-1im * k .* v' * t)
+    ff1 .*= exp.(-1im * k .* v' * t)
+    ff2 .*= exp.(-1im * k .* v' * t)
+    ff3 .*= exp.(-1im * k .* v' * t)
 
-    f0 .= real(ifft(ff0,1)')
-    f1 .= real(ifft(ff1,1)')
-    f2 .= real(ifft(ff2,1)')
-    f3 .= real(ifft(ff3,1)')
+    f0 .= real(ifft(ff0, 1)')
+    f1 .= real(ifft(ff1, 1)')
+    f2 .= real(ifft(ff2, 1)')
+    f3 .= real(ifft(ff3, 1)')
 
     ################################################################
     #below we compute E1; solve Ampere equation
     #poisson equation error in fourier version()
     for i = 2:M
-        E1[i] += 1.0 ./ (1im .* k[i] ) .* sum(ff0[i,:] .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * 2H / N
+        E1[i] +=
+            1.0 ./ (1im .* k[i]) .*
+            sum(ff0[i, :] .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * 2H / N
     end
 end
 
@@ -131,28 +135,30 @@ function step!(f0, f1, f2, f3, E1, op::H1fOperator, t)
 
     transpose!(op.tmp, f0)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(- 1im .* k .* v' .* t)
+    op.tmp .*= exp.(-1im .* k .* v' .* t)
     for i = 2:M
-        E1[i] += 1.0 ./ (1im .* k[i]) .* sum(view(op.tmp,i,:) .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * dv 
+        E1[i] +=
+            1.0 ./ (1im .* k[i]) .*
+            sum(view(op.tmp, i, :) .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * dv
     end
-    ifft!(op.tmp,1)
+    ifft!(op.tmp, 1)
     transpose!(f0, real(op.tmp))
 
     transpose!(op.tmp, f1)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(- 1im .* k .* v' .* t)
-    ifft!(op.tmp,1)
+    op.tmp .*= exp.(-1im .* k .* v' .* t)
+    ifft!(op.tmp, 1)
     transpose!(f1, real(op.tmp))
 
     transpose!(op.tmp, f2)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(- 1im .* k .* v' .* t)
-    ifft!(op.tmp,1)
+    op.tmp .*= exp.(-1im .* k .* v' .* t)
+    ifft!(op.tmp, 1)
     transpose!(f2, real(op.tmp))
 
     transpose!(op.tmp, f3)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(- 1im .* k .* v' .* t)
-    ifft!(op.tmp,1)
+    op.tmp .*= exp.(-1im .* k .* v' .* t)
+    ifft!(op.tmp, 1)
     transpose!(f3, real(op.tmp))
 end
