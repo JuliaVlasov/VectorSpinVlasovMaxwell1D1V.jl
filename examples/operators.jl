@@ -84,7 +84,7 @@ function operators()
     Tvalue = Vector{Float64}[]
     time = Float64[]
 
-    results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, M, N, L, H, h_int)
+    results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
     push!(Ex_energy, results[1])
     push!(E_energy, results[2])
     push!(B_energy, results[3])
