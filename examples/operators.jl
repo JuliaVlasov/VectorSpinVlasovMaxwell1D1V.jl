@@ -1,11 +1,12 @@
 using Plots
 using FFTW
+using MAT
 using ProgressMeter
 using VectorSpinVlasovMaxwell1D1V
 using TimerOutputs
 
 import VectorSpinVlasovMaxwell1D1V: initialfunction
-import VectorSpinVlasovMaxwell1D1V: numeint
+import VectorSpinVlasovMaxwell1D1V: initialfields
 import VectorSpinVlasovMaxwell1D1V: diagnostics
 import VectorSpinVlasovMaxwell1D1V: H2fh!
 import VectorSpinVlasovMaxwell1D1V: He!
@@ -45,14 +46,7 @@ function operators()
     Tvalue = Vector{Float64}[]
     time = Float64[]
 
-    results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
-    push!(Ex_energy, results[1])
-    push!(E_energy, results[2])
-    push!(B_energy, results[3])
-    push!(energy, results[4])
-    push!(Sz, results[5])
-    push!(Tvalue, results[6])
-    push!(time, 0.0)
+    results = Diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
 
     H2fh = H2fhOperator(adv)
     He = HeOperator(adv)
@@ -71,27 +65,18 @@ function operators()
         @timeit to "HAA" step!(f0, f1, f2, f3, E2, E3, A2, A3, HAA, h / 2)
         @timeit to "He" step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h / 2)
         @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h / 2, h_int)
+        @timeit to "diagnostics" save!(results, i*h, f0, f2, f3, E1, E2, E3, A2, A3)
 
-        # save properties each time interation
-        @timeit to "diagnostics" results =
-            diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
-        push!(Ex_energy, results[1])
-        push!(E_energy, results[2])
-        push!(B_energy, results[3])
-        push!(energy, results[4])
-        push!(Sz, results[5])
-        push!(Tvalue, results[6])
-        push!(time, i * h)
     end
 
-    time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue
+    results
 
 end
 
-time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = operators()
+results = operators()
 
 show(to)
-plot(time, Ex_energy, label="julia v2")
+plot(results.time, results.Ex_energy, label="julia v2")
 
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
 
