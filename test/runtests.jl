@@ -163,23 +163,63 @@ end
 
     He!(f0, f1, f2, f3, E1, E2, E3, A2, A3, h / 2, H)
 
-    fields = matread("fields1.mat")
-    df = matread("df1.mat")
+    fields = matread("fields2.mat")
+    df = matread("df2.mat")
 
-    #@test E1 ≈ fields["E1"]
-    #@test E2 ≈ fields["E2"]
-    #@test E3 ≈ fields["E3"]
-    #@test A2 ≈ fields["A2"]
-    #@test A3 ≈ fields["A3"]
-    #@test f0 ≈ df["f0"]
-    #@test f1 ≈ df["f1"]
-    #@test f2 ≈ df["f2"]
-    #@test f3 ≈ df["f3"]
+    @test E1 ≈ fields["E1"]
+    @test E2 ≈ fields["E2"]
+    @test E3 ≈ fields["E3"]
+    @test A2 ≈ fields["A2"]
+    @test A3 ≈ fields["A3"]
+    @test f0 ≈ df["f0"]
+    @test f1 ≈ df["f1"]
+    @test f2 ≈ df["f2"]
+    @test f3 ≈ df["f3"]
 
     HAA!(f0, f1, f2, f3, E2, E3, A2, A3, h / 2, L, H)
+
+    fields = matread("fields3.mat")
+    df = matread("df3.mat")
+
+    @test E1 ≈ fields["E1"]
+    @test E2 ≈ fields["E2"]
+    @test E3 ≈ fields["E3"]
+    @test A2 ≈ fields["A2"]
+    @test A3 ≈ fields["A3"]
+    @test f0 ≈ df["f0"]
+    @test f1 ≈ df["f1"]
+    @test f2 ≈ df["f2"]
+    @test f3 ≈ df["f3"]
+
     H3fh!(f0, f1, f2, f3, E2, A2, h / 2, L, H, h_int)
+
+    fields = matread("fields4.mat")
+    df = matread("df4.mat")
+
+    @test E1 ≈ fields["E1"]
+    @test E2 ≈ fields["E2"]
+    @test E3 ≈ fields["E3"]
+    @test A2 ≈ fields["A2"]
+    @test A3 ≈ fields["A3"]
+    @test f0 ≈ df["f0"]
+    @test f1 ≈ df["f1"]
+    @test f2 ≈ df["f2"]
+    @test f3 ≈ df["f3"]
+
     H1f!(f0, f1, f2, f3, E1, h, L, H)
-    H3fh!(f0, f1, f2, f3, E2, A2, h / 2, L, H, h_int)
+
+    fields = matread("fields5.mat")
+    df = matread("df5.mat")
+
+    @test E1 ≈ fields["E1"]
+    @test E2 ≈ fields["E2"]
+    @test E3 ≈ fields["E3"]
+    @test A2 ≈ fields["A2"]
+    @test A3 ≈ fields["A3"]
+    @test f0 ≈ df["f0"]
+    @test f1 ≈ df["f1"]
+    @test f2 ≈ df["f2"]
+    @test f3 ≈ df["f3"]
 
 end
 
