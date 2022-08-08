@@ -30,6 +30,29 @@ The scalar spin Vlasov--Maxwell  system is:
 \right.
 ```
 
+```math
+f(t, x,p,{\mathbf{s}})=\frac{1}{4\pi}(f_0(t, x,p)+3s_1f_1(t, x,p)+3s_2f_2(t, x,p)+3s_3f_3(t, x,p)).
+```
+
+```math
+\left\{
+\begin{aligned}
+&\frac{\partial f_0}{\partial t} + p \frac{\partial f_0}{\partial x} + \left(E_x - {\mathbf A}_\perp \cdot \frac{\partial {\mathbf A}_\perp}{\partial x}  \right) \frac{\partial f_0}{\partial p} - \mathfrak{h}\frac{\partial^2 A_z}{\partial x^2}\frac{\partial f_2}{\partial p} +  \mathfrak{h}\frac{\partial^2 A_y}{\partial x^2} \frac{\partial f_3}{\partial p}  = 0,\\
+&\frac{\partial f_1}{\partial t} + p \frac{\partial f_1}{\partial x} + \left(E_x - {\mathbf A}_\perp \cdot \frac{\partial {\mathbf A}_\perp}{\partial x}  \right) \frac{\partial f_1}{\partial p}
+ - \frac{\partial A_z }{\partial x}  f_3  -  \frac{\partial A_y }{\partial x} f_2 = 0,\\
+& \frac{\partial f_2}{\partial t} + p \frac{\partial f_2}{\partial x} + \left(E_x - {\mathbf A}_\perp \cdot \frac{\partial {\mathbf A}_\perp}{\partial x}  \right) \frac{\partial f_2}{\partial p} - {\frac{\mathfrak{h}}{3}} \frac{\partial^2 A_z}{\partial x^2}\frac{\partial f_0}{\partial p}
+  +  \frac{\partial A_y }{\partial x} f_1 = 0,\\
+ & \frac{\partial f_3}{\partial t} + p \frac{\partial f_3}{\partial x} + \left(E_x - {\mathbf A}_\perp \cdot \frac{\partial {\mathbf A}_\perp}{\partial x}  \right) \frac{\partial f_3}{\partial p} + {\frac{\mathfrak{h}}{3}}  \frac{\partial^2 A_y}{\partial x^2}\frac{\partial f_0}{\partial p}
+  +  \frac{\partial A_z }{\partial x} f_1 = 0,\\
+&\frac{\partial E_x}{\partial t} = -\int_{\mathbb{R}} p f_0  \mathrm{d}\mathrm{p},\\
+&\frac{\partial E_y}{\partial t} = - \frac{\partial^2 A_y}{\partial x^2} + A_y \int_{\mathbb{R}}  f_0  \mathrm{d}\mathrm{p} + \mathfrak{h}\int_{\mathbb{R}}  \frac{\partial f_3}{\partial x}\mathrm{d}\mathrm{p},\\
+&\frac{\partial E_z}{\partial t} = - \frac{\partial^2 A_z}{\partial x^2} + A_z \int_{\mathbb{R}}  f_0  \mathrm{d}\mathrm{p} -\mathfrak{h} \int_{\mathbb{R}}  \frac{\partial f_2}{\partial x}\mathrm{d}\mathrm{p},\\
+& \frac{\partial {\mathbf A}_\perp}{\partial t} = - {\mathbf E}_\perp,\\
+&\frac{\partial E_x}{\partial x} = \int_{\mathbb{R}} f_0 \mathrm{d}\mathrm{p} - 1.\ \text{(Poisson equation)}
+\end{aligned}
+\right.
+```
+
 ## Time discretization: Hamiltonian splitting method
 
 ```math
