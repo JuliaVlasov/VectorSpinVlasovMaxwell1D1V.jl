@@ -75,41 +75,41 @@ $(SIGNATURES)
 function H1f!(f0, f1, f2, f3, E1, t, L, H)
 
     N, M = size(f0)
-    #####################################################
-    # computation of fO & f
+
     ff0 = complex(f0')
     ff1 = complex(f1')
     ff2 = complex(f2')
     ff3 = complex(f3')
-    v = (1:N) .* 2 .* H ./ N .- H .- H ./ N
-    # Fourier transform
-
+    
     fft!(ff0, 1)
     fft!(ff1, 1)
     fft!(ff2, 1)
     fft!(ff3, 1)
-    # frequency: k_fre=[0:M/2-1,-M/2:-1]
-    # M is odd; odd frequency number
-    k = 2pi / L .* [0:(M-1)÷2; -(M - 1)÷2:-1]
-    # FFT in x direction to solve f_t+v f_x=0
-    ff0 .*= exp.(-1im * k .* v' * t)
-    ff1 .*= exp.(-1im * k .* v' * t)
-    ff2 .*= exp.(-1im * k .* v' * t)
-    ff3 .*= exp.(-1im * k .* v' * t)
 
-    f0 .= real(ifft(ff0, 1)')
-    f1 .= real(ifft(ff1, 1)')
-    f2 .= real(ifft(ff2, 1)')
-    f3 .= real(ifft(ff3, 1)')
+    k = [0:(M-1)÷2; -(M - 1)÷2:-1] .* 2π / L
+    v = (1:N) .* 2 .* H ./ N .- H .- H ./ N
 
-    ################################################################
-    #below we compute E1; solve Ampere equation
-    #poisson equation error in fourier version()
+    expv = exp.(- 1im .* k .* v' .* t)
+
     for i = 2:M
-        E1[i] +=
-            1.0 ./ (1im .* k[i]) .*
-            sum(ff0[i, :] .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * 2H / N
+        E1[i] += 1 / (1im * k[i]) * sum(ff0[i,:] .* (expv[i,:] .- 1.0)) * 2H / N
     end
+
+    ff0 .*= expv
+    ff1 .*= expv
+    ff2 .*= expv
+    ff3 .*= expv
+
+    ifft!(ff0, 1)
+    ifft!(ff1, 1)
+    ifft!(ff2, 1)
+    ifft!(ff3, 1)
+
+    f0 .= real(ff0')
+    f1 .= real(ff1')
+    f2 .= real(ff2')
+    f3 .= real(ff3')
+
 end
 
 export H1fOperator
