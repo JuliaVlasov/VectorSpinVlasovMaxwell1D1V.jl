@@ -24,48 +24,8 @@ function run()
     mesh = Mesh(N, M, H, L)
     adv  = Translator(mesh)
     
-    E0 = 0.123 * ww # Eref
-    E1 = fft(a ./ kkk .* sin.(kkk .* mesh.x))
-    E2 = fft(E0 .* cos.(k0 .* mesh.x))
-    E3 = fft(E0 .* sin.(k0 .* mesh.x))
-    A2 = -fft(E0 ./ ww .* sin.(k0 .* mesh.x))
-    A3 = fft(E0 ./ ww .* cos.(k0 .* mesh.x))
-    ata = 0.2
-
-
-    function initialfunction(x, v, frequency, a)
-    
-        kk = 0.17 # v_th
-        f(x, v) = (1 / sqrt(2pi) / kk) * exp(-(v^2 / 2 / kk / kk)) * (1 + a * cos(frequency * x))
-
-        v1 = v - H / N
-        v2 = v - H / 2N
-        v3 = v 
-        v4 = v + H / 2N
-        v5 = v + H / N
-
-        y1 = f(x, v1)
-        y2 = f(x, v2)
-        y3 = f(x, v3)
-        y4 = f(x, v4)
-        y5 = f(x, v5)
-
-        return 7 / 90 * y1 + 16 / 45 * y2 + 2 / 15 * y3 + 16 / 45 * y4 + 7 / 90 * y5
-    
-    end
-
-    f0 = zeros(N, M)
-    f1 = zeros(N, M)
-    f2 = zeros(N, M)
-    f3 = zeros(N, M)
-
-    for k = 1:M, i = 1:N
-        f0[i, k] = initialfunction(mesh.x[k], mesh.v[i], kkk, a)
-    end
-    @show size(f0)
-    @show size(f3)
-
-    f3 .= ata ./ 3.0 .* f0
+    E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, kkk, k0)
+    f0, f1, f2, f3 = initialfunction(mesh, a, kkk, ata)
 
     Ex_energy = Float64[]
     E_energy = Float64[]
