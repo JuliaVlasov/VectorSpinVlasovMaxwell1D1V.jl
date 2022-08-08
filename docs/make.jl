@@ -16,6 +16,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Validation" => "srs_without_spin.md",
         "Example" => "example.md",
         "API" => "api.md",
     ],

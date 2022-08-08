@@ -11,6 +11,8 @@ function _initialfields(x, a, ww, frequency, k0)
 
 end
 
+export initialfields
+
 function initialfields(H, L, N, M, a, ww, frequency, k0)
 
     x = (0:(M-1)) .* L ./ M #mesh in x direction

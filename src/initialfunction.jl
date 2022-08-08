@@ -24,6 +24,8 @@ function f(x, v, frequency, a)
 
 end
 
+export initialfunction
+
 """
 Initial Gaussian function & add a perturbation in x direction
 

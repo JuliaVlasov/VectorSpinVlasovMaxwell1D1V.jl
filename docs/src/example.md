@@ -20,6 +20,7 @@ function run()
     h_int = 0.2 # hbar
     k0 = 2.0 * kkk
     ww = sqrt(1.0 + k0^2.0) # w0
+    ata = 0.2
 
     mesh = Mesh(N, M, H, L)
     adv  = Translator(mesh)
@@ -35,14 +36,7 @@ function run()
     Tvalue = Vector{Float64}[]
     time = Float64[]
 
-    results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
-    push!(Ex_energy, results[1])
-    push!(E_energy, results[2])
-    push!(B_energy, results[3])
-    push!(energy, results[4])
-    push!(Sz, results[5])
-    push!(Tvalue, results[6])
-    push!(time, 0.0)
+    results = Diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
 
     H2fh = H2fhOperator(adv)
     He = HeOperator(adv)
@@ -62,42 +56,35 @@ function run()
         step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h/2)
         step!(f0, f1, f2, f3, E3, A3, H2fh, h/2, h_int)
         
-        results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
-        push!(Ex_energy, results[1])
-        push!(E_energy, results[2])
-        push!(B_energy, results[3])
-        push!(energy, results[4])
-        push!(Sz, results[5])
-        push!(Tvalue, results[6])
-        push!(time, i*h)
+        save!(results, i*h, f0, f2, f3, E1, E2, E3, A2, A3)
 
     end
 
-    time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue
+    results
 
 end
 ```
 
 ```@example test
-time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = run()
+data = run()
 ```
 
 ```@example test
-plot(time, Ex_energy)
+plot(data.time, data.Ex_energy)
 ```
 
 ```@example test
-plot(time, E_energy)
+plot(data.time, data.E_energy)
 ```
 
 ```@example test
-plot(time, B_energy)
+plot(data.time, data.B_energy)
 ```
 
 ```@example test
-plot(time, energy)
+plot(data.time, data.energy)
 ```
 
 ```@example test
-plot(time, Sz)
+plot(data.time, data.Sz)
 ```

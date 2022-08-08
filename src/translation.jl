@@ -193,7 +193,30 @@ end
 """
 $(SIGNATURES)
 
-interpolate df(x - delta)
+interpolate df(x - delta) with Parabolic Spline Method (PSM) 
+
+We consider a
+linear advection problem in ``p`` direction
+```math
+\\frac{\\partial f}{\\partial t} + a \\frac{\\partial f}{\\partial x} =0.
+```
+From the conservation of the volume, we have the following identity
+
+```math
+f_{j,\\ell}(t)=\\frac{1}{\\Delta p} \\int_{p_{\\ell-1/2}} ^{p_{\\ell+1/2}} f(x_j,p,t)\\mathrm{d}{p} =\frac{1}{\\Delta p} \\int_{p_{\\ell-1/2}-at} ^{p_{\\ell+1/2}-at} f(x_j,p,0)\\mathrm{d}{p}.
+```
+
+For simplicity, denote by ``q\\in [1, M]`` the index such that
+``p_{\\ell+1/2}-at \\in [p_{q-1/2},p_{q+1/2}]`` i.e.
+``p_{\\ell+1/2}-at \\in C_q``, then we have
+
+```math
+f_{j,\\ell}(t) =\\frac{1}{\\Delta p} \\int_{p_{q-1/2}-at} ^{p_{q-1/2}} f(x_j,p,0)\\mathrm{d}{p}+f_{j,q}(0)-\\frac{1}{\\Delta p} \\int_{p_{q+1/2}} ^{p_{q+1/2}-at} f(x_j,p,0)\\mathrm{d}{p}.
+```
+
+Here we need to reconstruct a polynomial function ``f(x_j,p,0)`` using the
+averages ``f_{j,l}(0)`` using the PSM approach. 
+
 """
 function translation!(df, adv::Translator, delta)
 
