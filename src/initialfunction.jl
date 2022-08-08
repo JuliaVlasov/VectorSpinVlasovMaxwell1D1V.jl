@@ -79,21 +79,31 @@ function initialfunction(mesh, a, frequency, ata)
 
     H, L, N, M = mesh.H, mesh.L, mesh.N, mesh.M
 
-    initialfunction(H, L, N, M, a, frequency, ata)
+    f0 = zeros(N, M)
+    f1 = zeros(N, M)
+    f2 = zeros(N, M)
+    f3 = zeros(N, M)
 
-    #f0 = zeros(N, M)
-    #f1 = zeros(N, M)
-    #f2 = zeros(N, M)
-    #f3 = zeros(N, M)
+    for k = 1:M
+        for i = 1:N
+            v1 = mesh.v[i] - (2H / N)
+            v2 = mesh.v[i] - (2H / N) * 3 / 4
+            v3 = mesh.v[i] - (2H / N) / 2
+            v4 = mesh.v[i] - (2H / N) / 4
+            v5 = mesh.v[i] 
 
-    #for k = 1:M, i = 1:N
+            y1 = f(mesh.x[k], v1, frequency, a)
+            y2 = f(mesh.x[k], v2, frequency, a)
+            y3 = f(mesh.x[k], v3, frequency, a)
+            y4 = f(mesh.x[k], v4, frequency, a)
+            y5 = f(mesh.x[k], v5, frequency, a)
 
-    #    f0[i,k] = f(mesh.x[k], mesh.v[i], frequency, a)
+            f0[i,k] = (7y1 + 32y2 + 12y3 + 32y4 + 7y5) / 90
+        end
+    end
 
-    #end
+    f3 .= (ata / 3.0) .* f0
 
-    #f3 .= (ata / 3.0) .* f0
-
-    #return f0, f1, f2, f3
+    return f0, f1, f2, f3
 
 end

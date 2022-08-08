@@ -34,27 +34,15 @@ function H3fh(f0, f1, f2, f3, E2, A2, t, M, N, L, H, h_int)
     u1 = zeros(N, M)
     u2 = zeros(N, M)
     for i = 1:M
-        u1[:, i] .= translation(
-            (0.5 * savevaluef0[:, i] .+ 0.5 * sqrt(3) * savevaluef3[:, i]),
-            N,
-            translatorv1[:, i],
-            H,
-        )
-        u2[:, i] .= translation(
-            (0.5 * savevaluef0[:, i] .- 0.5 * sqrt(3) * savevaluef3[:, i]),
-            N,
-            translatorv2[:, i],
-            H,
-        )
+        u1[:, i] .= translation( (0.5 * savevaluef0[:, i] .+ 0.5 * sqrt(3) * savevaluef3[:, i]), N, translatorv1[:, i], H,)
+        u2[:, i] .= translation( (0.5 * savevaluef0[:, i] .- 0.5 * sqrt(3) * savevaluef3[:, i]), N, translatorv2[:, i], H,)
         f0t[:, i] .= u1[:, i] .+ u2[:, i]
         f3t[:, i] .= u1[:, i] ./ sqrt(3) .- u2[:, i] ./ sqrt(3)
-        f1t[:, i] .=
-            cos(t * partialA2[i]) .* f1[:, i] .+ sin(t * real(partialA2[i])) .* f2[:, i]
-        f2t[:, i] .=
-            -sin(t * partialA2[i]) .* f1[:, i] .+ cos(t * real(partialA2[i])) .* f2[:, i]
+        f1t[:, i] .= cos(t * partialA2[i]) .* f1[:, i] .+ sin(t * real(partialA2[i])) .* f2[:, i]
+        f2t[:, i] .= -sin(t * partialA2[i]) .* f1[:, i] .+ cos(t * real(partialA2[i])) .* f2[:, i]
     end
     #####################################################
-    ff3 = zeros(ComplexF64, size(f3))
+    ff3 = complex(f3)
     for i = 1:N
         ff3[i, :] .= fft(ff3[i, :])
     end
@@ -96,13 +84,12 @@ function H3fh!(f0, f1, f2, f3, E2, A2, t, L, H, h_int)
     translation!(u1, v1, H)
     translation!(u2, v2, H)
 
-    ff3 = complex(f3)
-
     f0 .= u1 .+ u2
     f3 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
     f1 .= cos.(t * real(partialA2')) .* f1 .+ sin.(t * real(partialA2')) .* f2
     f2 .= -sin.(t * real(partialA2')) .* f1 .+ cos.(t * real(partialA2')) .* f2
 
+    ff3 = complex(f3)
     fft!(ff3, 2)
 
     for i = 2:M
@@ -167,13 +154,13 @@ function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
     op.partial .= 1im .* k .* A2
     ifft!(op.partial)
 
-    transpose!(op.f3, f3)
 
     f0 .= op.u1 .+ op.u2
     f3 .= op.u1 ./ sqrt(3) .- op.u2 ./ sqrt(3)
     f1 .= cos.(t .* real(op.partial')) .* f1 .+ sin.(t .* real(op.partial')) .* f2
     f2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f2
 
+    transpose!(op.f3, f3)
     fft!(op.f3, 1)
 
     for i = 2:M

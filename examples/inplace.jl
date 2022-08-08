@@ -4,6 +4,7 @@ using ProgressMeter
 using TimerOutputs
 using MAT
 
+import VectorSpinVlasovMaxwell1D1V: initialfields
 import VectorSpinVlasovMaxwell1D1V: initialfunction
 import VectorSpinVlasovMaxwell1D1V: numeint
 import VectorSpinVlasovMaxwell1D1V: diagnostics
