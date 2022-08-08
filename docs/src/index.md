@@ -30,6 +30,8 @@ The scalar spin Vlasov--Maxwell  system is:
 \right.
 ```
 
+The system numerically solve is the vector model:
+
 ```math
 f(t, x,p,{\mathbf{s}})=\frac{1}{4\pi}(f_0(t, x,p)+3s_1f_1(t, x,p)+3s_2f_2(t, x,p)+3s_3f_3(t, x,p)).
 ```
