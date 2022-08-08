@@ -118,8 +118,10 @@ struct H1fOperator
 
     adv::Translator
     tmp::Matrix{ComplexF64}
+    expv::Matrix{ComplexF64}
 
-    H1fOperator(adv) = new(adv, zeros(ComplexF64, adv.mesh.M, adv.mesh.N))
+    H1fOperator(adv) = new(adv, zeros(ComplexF64, adv.mesh.M, adv.mesh.N)
+                              , zeros(ComplexF64, adv.mesh.M, adv.mesh.N))
 
 end
 
@@ -128,37 +130,39 @@ $(SIGNATURES)
 """
 function step!(f0, f1, f2, f3, E1, op::H1fOperator, t)
 
+    N, M = size(f0)
+    L, H = op.adv.mesh.L, op.adv.mesh.H
     k = op.adv.mesh.k
-    M = op.adv.mesh.M
-    v = op.adv.mesh.v
-    dv = op.adv.mesh.dv
+    v = (1:N) .* 2H ./ N .- H .- H ./ N
+    op.expv .= exp.(- 1im .* k .* v' .* t)
 
     transpose!(op.tmp, f0)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(-1im .* k .* v' .* t)
+
     for i = 2:M
-        E1[i] +=
-            1.0 ./ (1im .* k[i]) .*
-            sum(view(op.tmp, i, :) .* (exp.(-1im .* k[i] .* t .* v) .- 1.0)) * dv
+        E1[i] += 1 / (1im * k[i]) * sum(op.tmp[i,:] .* (op.expv[i,:] .- 1.0)) * 2H / N
     end
+
+    op.tmp .*= op.expv
     ifft!(op.tmp, 1)
-    transpose!(f0, real(op.tmp))
+    transpose!( f0, real(op.tmp))
 
     transpose!(op.tmp, f1)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(-1im .* k .* v' .* t)
+    op.tmp .*= op.expv
     ifft!(op.tmp, 1)
-    transpose!(f1, real(op.tmp))
+    transpose!( f1, real(op.tmp))
 
     transpose!(op.tmp, f2)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(-1im .* k .* v' .* t)
+    op.tmp .*= op.expv
     ifft!(op.tmp, 1)
-    transpose!(f2, real(op.tmp))
+    transpose!( f2, real(op.tmp))
 
     transpose!(op.tmp, f3)
     fft!(op.tmp, 1)
-    op.tmp .*= exp.(-1im .* k .* v' .* t)
+    op.tmp .*= op.expv
     ifft!(op.tmp, 1)
-    transpose!(f3, real(op.tmp))
+    transpose!( f3, real(op.tmp))
+
 end
