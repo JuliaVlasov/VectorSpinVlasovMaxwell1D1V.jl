@@ -92,12 +92,8 @@ function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
     partialA3 .= real(ifft(1im .* k .* A3))
     partial2A3 .= real(ifft( - k.^ 2 .* A3))
     # solve transport problem in v direction by Semi-Lagrangian method
-    v1 = zeros(N, M)
-    v2 = zeros(N, M)
-    for i = 1:M
-        v1[:, i] .= (t * h_int * partial2A3[i] / sqrt(3)) 
-        v2[:, i] .= -v1[:, i]
-    end
+    v1 = t .* h_int .* partial2A3 ./ sqrt(3)
+    v2 = - v1
 
     f0t = zeros(N, M)
     f1t = zeros(N, M)
@@ -106,19 +102,15 @@ function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
     u1 = zeros(N, M)
     u2 = zeros(N, M)
 
+    #translation!(u1, v1, H)
+    #translation!(u2, v2, H)
+
+    u1 .= 0.5 .* f0 .+ 0.5 * sqrt(3) .* f2
+    u2 .= 0.5 .* f0 .- 0.5 * sqrt(3) .* f2
+
     for i = 1:M
-        u1[:, i] .= translation(
-            (0.5 * f0[:, i] .+ 0.5 * sqrt(3) .* f2[:, i]),
-            N,
-            v1[:, i],
-            H,
-        )
-        u2[:, i] .= translation(
-            (0.5 * f0[:, i] .- 0.5 * sqrt(3) .* f2[:, i]),
-            N,
-            v2[:, i],
-            H,
-        )
+        u1[:, i] .= translation( u1[:, i], N, v1[i] .* ones(N), H)
+        u2[:, i] .= translation( u2[:, i], N, v2[i] .* ones(N), H)
         f0t[:, i] .= u1[:, i] .+ u2[:, i]
         f2t[:, i] .= u1[:, i] ./ sqrt(3) .- u2[:, i] ./ sqrt(3)
         f1t[:, i] .=
