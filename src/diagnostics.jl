@@ -1,4 +1,47 @@
-export diagnostics
+export diagnostics, Diagnostics, save!
+
+struct Diagnostics
+
+    mesh :: Mesh
+    h_int :: Float64
+    Ex_energy :: Vector{Float64}
+    E_energy :: Vector{Float64}
+    B_energy :: Vector{Float64}
+    energy :: Vector{Float64}
+    Sz :: Vector{Float64}
+    Tvalue :: Vector{Vector{Float64}}
+    time :: Vector{Float64}
+
+    function Diagnostics( f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
+
+       results = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh, h_int)
+       Ex_energy = [results[1]]
+       E_energy  = [results[2]]
+       B_energy  = [results[3]]
+       energy    = [results[4]]
+       Sz        = [results[5]]
+       Tvalue    = [results[6]]
+       time      = [0.0]
+
+       new(mesh, h_int, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue, time)
+
+    end
+
+end
+
+function save!(results, time, f0, f2, f3, E1, E2, E3, A2, A3)
+
+    diags = diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, results.mesh, results.h_int)
+
+    push!(results.Ex_energy, diags[1])
+    push!(results.E_energy, diags[2])
+    push!(results.B_energy, diags[3])
+    push!(results.energy, diags[4])
+    push!(results.Sz, diags[5])
+    push!(results.Tvalue, diags[6])
+    push!(results.time, time)
+
+end
 
 function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
 
