@@ -157,11 +157,13 @@ function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
     op.partial .= 1im .* k .* A2
     ifft!(op.partial)
 
-
     f0 .= op.u1 .+ op.u2
     f3 .= op.u1 ./ sqrt(3) .- op.u2 ./ sqrt(3)
-    f1 .= cos.(t .* real(op.partial')) .* f1 .+ sin.(t .* real(op.partial')) .* f2
-    f2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f2
+    op.u1 .= cos.(t .* real(op.partial')) .* f1 .+ sin.(t .* real(op.partial')) .* f2
+    op.u2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f2
+
+    f1 .= op.u1
+    f2 .= op.u2
 
     transpose!(op.f3, f3)
     fft!(op.f3, 1)
