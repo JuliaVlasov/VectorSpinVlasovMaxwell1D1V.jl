@@ -85,52 +85,32 @@ function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
 
     k = fftfreq(M, M) .* 2π ./ L
 
-    #####################################################
-    # use FFT to compute A3_x; A3_xx
-    partialA3 = zeros(M)
-    partial2A3 = zeros(M)
-    partialA3 .= real(ifft(1im .* k .* A3))
-    partial2A3 .= real(ifft( - k.^ 2 .* A3))
-    # solve transport problem in v direction by Semi-Lagrangian method
+    partialA3 = real(ifft(1im .* k .* A3))
+    partial2A3 = real(ifft( - k.^ 2 .* A3))
+    
     v1 = t .* h_int .* partial2A3 ./ sqrt(3)
     v2 = - v1
 
-    f0t = zeros(N, M)
-    f1t = zeros(N, M)
-    f2t = zeros(N, M)
-    f3t = zeros(N, M)
-    u1 = zeros(N, M)
-    u2 = zeros(N, M)
+    u1 = 0.5 .* f0 .+ 0.5 * sqrt(3) .* f2
+    u2 = 0.5 .* f0 .- 0.5 * sqrt(3) .* f2
 
-    #translation!(u1, v1, H)
-    #translation!(u2, v2, H)
-
-    u1 .= 0.5 .* f0 .+ 0.5 * sqrt(3) .* f2
-    u2 .= 0.5 .* f0 .- 0.5 * sqrt(3) .* f2
-
-    for i = 1:M
-        u1[:, i] .= translation( u1[:, i], N, v1[i] .* ones(N), H)
-        u2[:, i] .= translation( u2[:, i], N, v2[i] .* ones(N), H)
-        f0t[:, i] .= u1[:, i] .+ u2[:, i]
-        f2t[:, i] .= u1[:, i] ./ sqrt(3) .- u2[:, i] ./ sqrt(3)
-        f1t[:, i] .=
-            cos.(t * partialA3[i]) * f1[:, i] .+ sin.(t * partialA3[i]) * f3[:, i]
-        f3t[:, i] .=
-            -sin.(t * partialA3[i]) * f1[:, i] .+ cos.(t * partialA3[i]) * f3[:, i]
-    end
+    translation!( u1, v1, H)
+    translation!( u2, v2, H)
 
     ff2 = complex(f2)
-    for i = 1:N
-        ff2[i, :] .= fft(ff2[i, :])
-    end
+    fft!( ff2, 2)
     for i = 2:M
         E3[i] += - t * h_int * 1im * k[i] * sum(ff2[:, i]) * 2 * H / N
     end
 
-    f0 .= f0t
-    f1 .= f1t
-    f2 .= f2t
-    f3 .= f3t
+    f0 .= u1 .+ u2
+    f2 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
+
+    u1 .= cos.(t * partialA3') .* f1 .+ sin.(t * partialA3') .* f3
+    u2 .= -sin.(t * partialA3') .* f1 .+ cos.(t * partialA3') .* f3
+
+    f1 .= u1
+    f3 .= u2
 end
 
 export H2fhOperator
