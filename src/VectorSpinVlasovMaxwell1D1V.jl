@@ -4,8 +4,8 @@ using DocStringExtensions
 using FFTW
 
 include("mesh.jl")
+include("initialfields.jl")
 include("initialfunction.jl")
-include("numeint.jl")
 include("diagnostics.jl")
 include("translation.jl")
 include("h2fh.jl")

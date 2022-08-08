@@ -29,54 +29,10 @@ function inplace()
     h_int = 0.2 # hbar
     k0 = 2.0 * kkk
     ww = sqrt(1.0 + k0^2.0) # w0
-
-    x = (0:(M-1)) .* L ./ M #mesh in x direction
-    v = (1:N) .* 2 .* H ./ N .- H #mesh in v direction
-
-    E0 = 0.123 * ww # Eref
-    E1 = fft(a ./ kkk .* sin.(kkk .* x))
-    E2 = fft(E0 .* cos.(k0 .* x))
-    E3 = fft(E0 .* sin.(k0 .* x))
-    A2 = -fft(E0 ./ ww .* sin.(k0 .* x))
-    A3 = fft(E0 ./ ww .* cos.(k0 .* x))
     ata = 0.2
 
-    kk = 0.17 # v_th
-    f(x, v) = (1 / sqrt(2pi) / kk) * exp(-(v^2 / 2 / kk / kk)) * (1 + a * cos(kkk * x))
-
-
-    f0 = zeros(N, M)
-    f1 = zeros(N, M)
-    f2 = zeros(N, M)
-    f3 = zeros(N, M)
-
-    for k = 1:M
-
-        s = 0
-
-        for i = 1:N
-
-            v1 = v[k] - 2H / N
-            v2 = v[k] - 2H / N * 3 / 4
-            v3 = v[k] - 2H / N / 2
-            v4 = v[k] - 2H / N / 4
-            v5 = v[k] 
-
-            y1 = f(x[i], v1)
-            y2 = f(x[i], v2)
-            y3 = f(x[i], v3)
-            y4 = f(x[i], v4)
-            y5 = f(x[i], v5)
-
-            s += (7y1 + 32y2 + 12y3 + 32y4 + 7y5) / 90
-
-            f0[i,k] = s
-
-        end
-
-    end
-
-    f3 .= ata ./ 3.0 .* f0
+    E1, E2, E3, A2, A3 = initialfields( H, L, N, M, a, ww, kkk, k0)
+    f0, f1, f2, f3 = initialfunction(H, L, N, M, a, kkk, ata)
 
     # test several properties include electric energy; total energy; spectrum etc. save initial data
     Ex_energy = Float64[]
@@ -128,7 +84,7 @@ time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = inplace()
 
 show(to)
 
-plot(time, Ex_energy, label="julia v2")
+plot(time, Ex_energy, label="julia v1")
 
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
 

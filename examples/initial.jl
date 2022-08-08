@@ -3,6 +3,7 @@ using FFTW
 using MAT
 using ProgressMeter
 
+import VectorSpinVlasovMaxwell1D1V: initialfields
 import VectorSpinVlasovMaxwell1D1V: initialfunction
 import VectorSpinVlasovMaxwell1D1V: numeint
 import VectorSpinVlasovMaxwell1D1V: diagnostics
@@ -26,52 +27,10 @@ function main()
     h_int = 0.2 # hbar
     k0 = 2.0 * kkk
     ww = sqrt(1.0 + k0^2.0) # w0
-
-    x = (0:(M-1)) .* L ./ M #mesh in x direction
-    v1 = (1:N) .* 2 .* H ./ N .- H #mesh in v direction
-    tmp = zeros(M)
-    E0 = 0.123 * ww # Eref
-    E1 = fft(a ./ kkk .* sin.(kkk .* x))
-    E2 = fft(E0 .* cos.(k0 .* x))
-    E3 = fft(E0 .* sin.(k0 .* x))
-    A2 = -fft(E0 ./ ww .* sin.(k0 .* x))
-    A3 = fft(E0 ./ ww .* cos.(k0 .* x))
     ata = 0.2
 
-    # spin related coefficient
-    # 5 nodes in each cell in v direction
-    v1node = zeros(5N)
-    for i = 1:N
-        v1node[5*i-4] = v1[i] - 2 * H / N
-        v1node[5*i-3] = v1[i] - (2 * H / N) * 3 / 4
-        v1node[5*i-2] = v1[i] - (2 * H / N) * 1 / 2
-        v1node[5*i-1] = v1[i] - (2 * H / N) * 1 / 4
-        v1node[5*i] = v1[i]
-    end
-    # initialize the solution: the interal at each cell in v direction
-    f0_value_at_node = zeros(5N, M)
-    f1_value_at_node = zeros(5N, M)
-    f2_value_at_node = zeros(5N, M)
-    f3_value_at_node = zeros(5N, M)
-
-    for k = 1:M, i = 1:5N
-        f0_value_at_node[i, k] = initialfunction(k, x, i, v1node, kkk, a)
-        f1_value_at_node[i, k] = 0.0
-        f2_value_at_node[i, k] = 0.0
-        f3_value_at_node[i, k] = (ata / 3.0) * f0_value_at_node[i, k]
-    end
-
-    f0 = zeros(N, M)
-    f1 = zeros(N, M)
-    f2 = zeros(N, M)
-    f3 = zeros(N, M)
-
-    for k = 1:M
-        f0[:, k] .= numeint(f0_value_at_node[:, k], N)
-        f1[:, k] .= numeint(f1_value_at_node[:, k], N)
-        f2[:, k] .= numeint(f2_value_at_node[:, k], N)
-        f3[:, k] .= numeint(f3_value_at_node[:, k], N)
-    end
+    E1, E2, E3, A2, A3 = initialfields( H, L, N, M, a, ww, kkk, k0)
+    f0, f1, f2, f3 = initialfunction(H, L, N, M, a, kkk, ata)
 
     # test several properties include electric energy; total energy; spectrum etc. save initial data
     Ex_energy = Float64[]
@@ -121,7 +80,7 @@ end
 
 @time time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = main()
 
-plot(time, Ex_energy, label="julia v1")
+plot(time, Ex_energy, label="julia v0")
 
 
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
