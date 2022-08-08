@@ -86,8 +86,11 @@ function H3fh!(f0, f1, f2, f3, E2, A2, t, L, H, h_int)
 
     f0 .= u1 .+ u2
     f3 .= u1 ./ sqrt(3) .- u2 ./ sqrt(3)
-    f1 .= cos.(t * real(partialA2')) .* f1 .+ sin.(t * real(partialA2')) .* f2
-    f2 .= -sin.(t * real(partialA2')) .* f1 .+ cos.(t * real(partialA2')) .* f2
+    u1 .= cos.(t * real(partialA2')) .* f1 .+ sin.(t * real(partialA2')) .* f2
+    u2 .= -sin.(t * real(partialA2')) .* f1 .+ cos.(t * real(partialA2')) .* f2
+
+    f1 .= u1
+    f2 .= u2
 
     ff3 = complex(f3)
     fft!(ff3, 2)
