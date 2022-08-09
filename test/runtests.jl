@@ -4,11 +4,11 @@ using MAT
 using Test
 
 import VectorSpinVlasovMaxwell1D1V: initialfunction, initialfields
-import VectorSpinVlasovMaxwell1D1V: H2fh, H2fh!
-import VectorSpinVlasovMaxwell1D1V: He, He!
-import VectorSpinVlasovMaxwell1D1V: HAA, HAA!
-import VectorSpinVlasovMaxwell1D1V: H3fh, H3fh!
-import VectorSpinVlasovMaxwell1D1V: H1f, H1f!
+import VectorSpinVlasovMaxwell1D1V: H2fh!
+import VectorSpinVlasovMaxwell1D1V: He!
+import VectorSpinVlasovMaxwell1D1V: HAA!
+import VectorSpinVlasovMaxwell1D1V: H3fh!
+import VectorSpinVlasovMaxwell1D1V: H1f!
 
 const M = 129   # partition of x
 const N = 129   # partition of v
@@ -22,106 +22,6 @@ const k0 = 2.0 * kkk
 const ww = sqrt(1.0 + k0^2.0) # w0
 const ata = 0.2
 const kk = 0.17 # v_th
-
-@testset "Version 0" begin
-
-
-    E1, E2, E3, A2, A3 = initialfields( H, L, N, M, a, ww, kkk, k0)
-
-    fields = matread("fields0.mat")
-
-    @test E1 ≈ fields["E1"]
-    @test E2 ≈ fields["E2"]
-    @test E3 ≈ fields["E3"]
-    @test A2 ≈ fields["A2"]
-    @test A3 ≈ fields["A3"]
-
-    f0, f1, f2, f3 = initialfunction(H, L, N, M, a, kkk, ata)
-
-    df = matread("df0.mat")
-
-    @test f0 ≈ df["f0"]
-    @test f1 ≈ df["f1"]
-    @test f2 ≈ df["f2"]
-    @test f3 ≈ df["f3"]
-
-    f0, f1, f2, f3, E3 = H2fh(f0, f1, f2, f3, E3, A3, h / 2, M, N, L, H, h_int)
-
-    fields = matread("fields1.mat")
-    df = matread("df1.mat")
-
-    @test E1 ≈ fields["E1"]
-    @test E2 ≈ fields["E2"]
-    @test E3 ≈ fields["E3"]
-    @test A2 ≈ fields["A2"]
-    @test A3 ≈ fields["A3"]
-    @test f0 ≈ df["f0"]
-    @test f1 ≈ df["f1"]
-    @test f2 ≈ df["f2"]
-    @test f3 ≈ df["f3"]
-
-    f0, f1, f2, f3, A2, A3 = He(f0, f1, f2, f3, E1, E2, E3, A2, A3, h / 2, M, N, H)
-
-    fields = matread("fields2.mat")
-    df = matread("df2.mat")
-
-    @test E1 ≈ fields["E1"]
-    @test E2 ≈ fields["E2"]
-    @test E3 ≈ fields["E3"]
-    @test A2 ≈ fields["A2"]
-    @test A3 ≈ fields["A3"]
-    @test f0 ≈ df["f0"]
-    @test f1 ≈ df["f1"]
-    @test f2 ≈ df["f2"]
-    @test f3 ≈ df["f3"]
-
-    f0, f1, f2, f3, E2, E3 = HAA(f0, f1, f2, f3, E2, E3, A2, A3, h / 2, M, N, L, H)
-
-    fields = matread("fields3.mat")
-    df = matread("df3.mat")
-
-    @test E1 ≈ fields["E1"]
-    @test E2 ≈ fields["E2"]
-    @test E3 ≈ fields["E3"]
-    @test A2 ≈ fields["A2"]
-    @test A3 ≈ fields["A3"]
-    @test f0 ≈ df["f0"]
-    @test f1 ≈ df["f1"]
-    @test f2 ≈ df["f2"]
-    @test f3 ≈ df["f3"]
-
-    f0, f1, f2, f3, E2 = H3fh(f0, f1, f2, f3, E2, A2, h / 2, M, N, L, H, h_int)
-
-    fields = matread("fields4.mat")
-    df = matread("df4.mat")
-
-    @test E1 ≈ fields["E1"]
-    @test E2 ≈ fields["E2"]
-    @test E3 ≈ fields["E3"]
-    @test A2 ≈ fields["A2"]
-    @test A3 ≈ fields["A3"]
-    @test f0 ≈ df["f0"]
-    @test f1 ≈ df["f1"]
-    @test f2 ≈ df["f2"]
-    @test f3 ≈ df["f3"]
-
-    f0, f1, f2, f3, E1 = H1f(f0, f1, f2, f3, E1, h, M, N, L, H)
-
-    fields = matread("fields5.mat")
-    df = matread("df5.mat")
-
-    @test E1 ≈ fields["E1"]
-    @test E2 ≈ fields["E2"]
-    @test E3 ≈ fields["E3"]
-    @test A2 ≈ fields["A2"]
-    @test A3 ≈ fields["A3"]
-    @test f0 ≈ df["f0"]
-    @test f1 ≈ df["f1"]
-    @test f2 ≈ df["f2"]
-    @test f3 ≈ df["f3"]
-
-end
-
 
 @testset "Version 1" begin
 

@@ -80,6 +80,7 @@ end
 function initialfunction(mesh, a, frequency, ata)
 
     H, L, N, M = mesh.H, mesh.L, mesh.N, mesh.M
+    dv = mesh.dv
 
     f0 = zeros(N, M)
     f1 = zeros(N, M)
@@ -88,10 +89,10 @@ function initialfunction(mesh, a, frequency, ata)
 
     for k = 1:M
         for i = 1:N
-            v1 = mesh.v[i] - (2H / N)
-            v2 = mesh.v[i] - (2H / N) * 3 / 4
-            v3 = mesh.v[i] - (2H / N) / 2
-            v4 = mesh.v[i] - (2H / N) / 4
+            v1 = mesh.v[i] - dv
+            v2 = mesh.v[i] - dv * 0.75
+            v3 = mesh.v[i] - dv * 0.50
+            v4 = mesh.v[i] - dv * 0.25
             v5 = mesh.v[i] 
 
             y1 = f(mesh.x[k], v1, frequency, a)

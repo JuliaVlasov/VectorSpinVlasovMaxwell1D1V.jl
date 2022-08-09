@@ -1,91 +1,6 @@
 using LinearAlgebra
 
 """
-
-$(SIGNATURES)
-
-Given integral average in each cell;this function could compute
-coefficients a;b;c of piecewise quadratic polynomial using PSM method
-"""
-function recover(f, N)
-
-    # a;b;c are all row vectors
-    f1 = zeros(N + 1)
-    f1[2:N] .= view(f, 1:N-1) .+ view(f, 2:N)
-    f1[1] = f[1]
-    f1[N+1] = f[N]
-    diagonal = ones(N + 1)
-    upright = 1 / 3 .* ones(N)
-    diagonal[1] = 2 / 3
-    diagonal[N+1] = 2 / 3
-    diagonal[2:N] .= 4 / 3
-    # here we use MATLAB function sparse to get matrix A
-    A = SymTridiagonal(diagonal, upright)
-    # get result
-    c = A \ f1
-
-    a = zeros(N)
-    b = zeros(N)
-    cc = zeros(N)
-    for i = 2:N
-        cc[i] = (-1)^i * (c[i] - c[i-1])
-    end
-    for i = 2:N
-        b[i] = (-1)^i * 2 * sum(view(cc, 2:i))
-    end
-    b[1] = 0
-    a[1:N-1] .= 1 / 2 .* (view(b, 2:N) .- view(b, 1:N-1))
-    a[N] = -1 / 2 * b[N]
-
-    a, b, c
-end
-
-"""
-$(SIGNATURES)
-
-oldvector is the integral average value in each cell of function f(x)
-newvector is the integral average value in each cell of function f(x+delta)
-"""
-function translation(oldvector, N, delta, H)
-
-    # first recover oldvector & get the coefficients of piecewise polynomials
-    a, b, c = recover(oldvector, N)
-
-    newvector = zeros(N)
-
-    for i = 1:N
-        beta = i + delta[i] / (2 * H / N)
-        newbeta = beta - N * floor(Int, beta / N)
-
-        if (abs(newbeta) < 1e-20) || (abs(newbeta - N) < 1e-20)
-            newvector[i] = oldvector[N]
-        elseif newbeta >= 1.0
-            l = floor(Int, newbeta)
-            k = 1 - (newbeta - l)
-            valueI = a[l] / 3 + b[l] / 2 + c[l]
-            valueI = valueI - a[l] / 3 * (1 - k)^3 - b[l] / 2 * (1 - k)^2
-            valueI = valueI - c[l] * (1 - k)
-            valueII = a[l+1] / 3 * (1 - k)^3 + b[l+1] / 2 * (1 - k)^2
-            valueII = valueII + c[l+1] * (1 - k)
-            newvector[i] = valueI + valueII
-
-        else
-            l = N
-            k = 1 - newbeta
-            valueI = a[l] / 3 + b[l] / 2 + c[l]
-            valueI = valueI - a[l] / 3 * (1 - k)^3 - b[l] / 2 * (1 - k)^2
-            valueI = valueI - c[l] * (1 - k)
-            valueII = a[1] / 3 * (1 - k)^3 + b[1] / 2 * (1 - k)^2 + c[1] * (1 - k)
-            newvector[i] = valueI + valueII
-        end
-
-    end
-
-    return newvector
-
-end
-
-"""
 $(SIGNATURES)
 
 interpolate df(x - delta)
@@ -113,7 +28,6 @@ function translation!(df, delta, H)
         c[2:N] .= view(df, 1:N-1, j) .+ view(df, 2:N, j)
         c[1] = df[1, j]
         c[N+1] = df[N, j]
-        # get result
         c .= A \ c
 
         for i = 2:N
