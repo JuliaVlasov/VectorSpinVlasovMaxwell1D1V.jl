@@ -20,7 +20,7 @@ function H1f!(f0, f1, f2, f3, E1, t, L, H)
 
     expv = exp.(- 1im .* k .* v' .* t)
 
-    for i = 2:M
+    @inbounds for i = 2:M
         E1[i] += 1 / (1im * k[i]) * sum(ff0[i,:] .* (expv[i,:] .- 1.0)) * 2H / N
     end
 
@@ -45,12 +45,12 @@ export H1fOperator
 
 struct H1fOperator
 
-    adv::Translator
+    adv::AbstractAdvection
     tmp::Matrix{ComplexF64}
     expv::Matrix{ComplexF64}
 
-    H1fOperator(adv) = new(adv, zeros(ComplexF64, adv.mesh.M, adv.mesh.N)
-                              , zeros(ComplexF64, adv.mesh.M, adv.mesh.N))
+    H1fOperator(adv) = new(adv, zeros(ComplexF64, adv.mesh.nx, adv.mesh.nv)
+                              , zeros(ComplexF64, adv.mesh.nx, adv.mesh.nv))
 
 end
 
@@ -59,17 +59,18 @@ $(SIGNATURES)
 """
 function step!(f0, f1, f2, f3, E1, op::H1fOperator, t)
 
-    N, M = size(f0)
-    L, H = op.adv.mesh.L, op.adv.mesh.H
-    k = op.adv.mesh.k
-    v = (1:N) .* 2H ./ N .- H .- H ./ N
-    op.expv .= exp.(- 1im .* k .* v' .* t)
+    dv = op.adv.mesh.dv
+    nx = op.adv.mesh.nx
+    nv = op.adv.mesh.nv
+    kx = op.adv.mesh.kx
+    v = op.adv.mesh.v .- 0.5dv
+    op.expv .= exp.(- 1im .* kx .* v' .* t)
 
     transpose!(op.tmp, f0)
     fft!(op.tmp, 1)
 
-    for i = 2:M
-        E1[i] += 1 / (1im * k[i]) * sum(op.tmp[i,:] .* (op.expv[i,:] .- 1.0)) * 2H / N
+    @inbounds for i = 2:nx
+        E1[i] += 1 / (1im * kx[i]) * sum(op.tmp[i,:] .* (op.expv[i,:] .- 1.0)) * dv
     end
 
     op.tmp .*= op.expv

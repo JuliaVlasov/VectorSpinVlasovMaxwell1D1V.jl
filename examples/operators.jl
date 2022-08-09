@@ -19,21 +19,21 @@ const to = TimerOutput()
 function operators()
 
     T = 50 # 4000  # final time
-    M = 129   # partition of x
-    N = 129   # partition of v
-    H = 5.0 / 2   # v domain size()
+    nv = 129   # partition of x
+    nx = 129   # partition of v
+    vmin, vmax = -2.5, 2.5   # v domain size()
     kkk = 1.2231333040331807  #ke
-    L = 4pi / kkk  # x domain size()
+    xmin, xmax = 0, 4pi / kkk  # x domain size()
     h = 0.04 #time step size()
-    NUM = floor(Int, T / h + 1.1) # time step number
+    nsteps = floor(Int, T / h + 1.1) # time step number
     a = 0.02 # 0.001; perturbation coefficient
     h_int = 0.2 # hbar
     k0 = 2.0 * kkk
     ww = sqrt(1.0 + k0^2.0) # w0
     ata = 0.2
 
-    mesh = Mesh(N, M, H, L)
-    adv = Translator(mesh)
+    mesh = Mesh(xmin, xmax, nx, vmin, vmax, nv)
+    adv = PSMAdvection(mesh)
 
     E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, kkk, k0)
     f0, f1, f2, f3 = initialfunction(mesh, a, kkk, ata)
@@ -54,7 +54,7 @@ function operators()
     H3fh = H3fhOperator(adv)
     H1f = H1fOperator(adv)
 
-    @showprogress 1 for i = 1:NUM # Loop over time
+    @showprogress 1 for i = 1:nsteps # Loop over time
 
         @timeit to "H2fh" step!(f0, f1, f2, f3, E3, A3, H2fh, h / 2, h_int)
         @timeit to "He" step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, He, h / 2)
@@ -76,8 +76,8 @@ end
 results = operators()
 
 show(to)
-plot(results.time, results.Ex_energy, label="julia v2")
+plot(results.time, log.(results.Ex_energy), label="julia v2")
 
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
 
-plot!(vec(vars["time"]), vec(vars["Ex_energy"]), label="matlab")
+plot!(vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab")

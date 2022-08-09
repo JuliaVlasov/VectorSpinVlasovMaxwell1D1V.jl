@@ -24,7 +24,7 @@ function H2fh!(f0, f1, f2, f3, E3, A3, t, L, H, h_int)
 
     ff2 = complex(f2)
     fft!( ff2, 2)
-    for i = 2:M
+    @inbounds for i = 2:M
         E3[i] += - t * h_int * 1im * k[i] * sum(ff2[:, i]) * 2 * H / N
     end
 
@@ -42,7 +42,7 @@ export H2fhOperator
 
 struct H2fhOperator
 
-    adv::Translator
+    adv::AbstractAdvection
     partial::Vector{ComplexF64}
     v1::Vector{Float64}
     v2::Vector{Float64}
@@ -52,12 +52,12 @@ struct H2fhOperator
 
     function H2fhOperator(adv)
 
-        partial = zeros(ComplexF64, adv.mesh.M)
-        v1 = zeros(adv.mesh.M)
-        v2 = zeros(adv.mesh.M)
-        u1 = zeros(adv.mesh.N, adv.mesh.M)
-        u2 = zeros(adv.mesh.N, adv.mesh.M)
-        f2 = zeros(ComplexF64, adv.mesh.M, adv.mesh.N)
+        partial = zeros(ComplexF64, adv.mesh.nx)
+        v1 = zeros(adv.mesh.nx)
+        v2 = zeros(adv.mesh.nx)
+        u1 = zeros(adv.mesh.nv, adv.mesh.nx)
+        u2 = zeros(adv.mesh.nv, adv.mesh.nx)
+        f2 = zeros(ComplexF64, adv.mesh.nx, adv.mesh.nv)
 
         new(adv, partial, v1, v2, u1, u2, f2)
 
@@ -76,9 +76,9 @@ $(SIGNATURES)
 """
 function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, t, h_int)
 
-    k, dv = op.adv.mesh.k, op.adv.mesh.dv
+    kx, dv = op.adv.mesh.kx, op.adv.mesh.dv
 
-    op.partial .= -k .^ 2 .* A3
+    op.partial .= -kx .^ 2 .* A3
     ifft!(op.partial)
 
     op.v1 .= t .* h_int .* real(op.partial) ./ sqrt(3)
@@ -87,12 +87,12 @@ function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, t, h_int)
     op.u1 .= 0.5 * f0 .+ 0.5 * sqrt(3) .* f2
     op.u2 .= 0.5 * f0 .- 0.5 * sqrt(3) .* f2
 
-    translation!(op.u1, op.adv, op.v1)
-    translation!(op.u2, op.adv, op.v2)
+    advection!(op.u1, op.adv, op.v1)
+    advection!(op.u2, op.adv, op.v2)
 
     transpose!(op.f2, f2)
 
-    op.partial .= 1im .* k .* A3
+    op.partial .= 1im .* kx .* A3
     ifft!(op.partial)
 
     f0 .= op.u1 .+ op.u2
@@ -101,7 +101,7 @@ function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, t, h_int)
     op.u2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f3
 
     fft!(op.f2, 1)
-    E3 .-= t .* h_int .* (1im .* k) .* vec(sum(op.f2, dims = 2)) .* dv
+    E3 .-= t .* h_int .* (1im .* kx) .* vec(sum(op.f2, dims = 2)) .* dv
 
     f1 .= op.u1
     f3 .= op.u2

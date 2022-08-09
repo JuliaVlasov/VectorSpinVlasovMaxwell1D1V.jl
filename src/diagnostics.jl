@@ -45,14 +45,14 @@ end
 
 function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
 
-    N, M = mesh.N, mesh.M
-    k = mesh.k
+    nv, nx = mesh.nv, mesh.nx
+    kx = mesh.kx
     dx = mesh.dx
     dv = mesh.dv
     v = mesh.v
 
-    B2 = -1im .* k .* A3
-    B3 = 1im .* k .* A2
+    B2 = -1im .* kx .* A3
+    B3 = 1im .* kx .* A2
 
     EE1 = real(ifft(E1))
     EE2 = real(ifft(E2))
@@ -71,15 +71,15 @@ function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
     B_energy = 1 / 2 * sum(BB2 .^ 2) * dx + 1 / 2 * sum(BB3 .^ 2) * dx
     energy2 = E_energy + B_energy
 
-    ff0 = zeros(N, M)
-    ff2 = zeros(N, M)
-    ff3 = zeros(N, M)
-    ubar = zeros(M)
-    Tt = zeros(M)
-    for j = 1:M
+    ff0 = zeros(nv, nx)
+    ff2 = zeros(nv, nx)
+    ff3 = zeros(nv, nx)
+    ubar = zeros(nx)
+    Tt = zeros(nx)
+    for j = 1:nx
         Jbar = 0
         rhobar = 0
-        for k = 1:N
+        for k = 1:nv
             ff0[k, j] = 1 / 2 * (f0[k, j] * ((v[k]^2 + AA2[j]^2 + AA3[j]^2))) * dx * dv
             ff2[k, j] = h_int * f2[k, j] * (-BB2[j]) * dx * dv
             ff3[k, j] = -h_int * f3[k, j] * (BB3[j]) * dx * dv
@@ -89,7 +89,7 @@ function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
         ubar[j] = Jbar / rhobar
     end
     # temperature
-    for j = 1:M, k = 1:N
+    for j = 1:nx, k = 1:nv
         Tt[j] = Tt[j] + f0[k, j] * ((v[k] - ubar[j])^2) * dv
     end
     energy1 = sum(ff0 .+ ff2 .+ ff3)

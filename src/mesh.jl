@@ -8,15 +8,19 @@ $(TYPEDFIELDS)
 struct Mesh
 
     "Number of points in v"
-    N::Int64
+    nv::Int64
     "Number of points in x"
-    M::Int64
-    "Domain size v ∈ ]-H,+H["
-    H::Float64
-    "Domain size x ∈ [0,L]"
-    L::Float64
+    nx::Int64
+    "Domain size v ∈ ]vmin,vmax["
+    vmin::Float64
+    "Domain size v ∈ ]vmin,vmax["
+    vmax::Float64
+    "Domain size x ∈ [xmin,xmax]"
+    xmin::Float64
+    "Domain size x ∈ [xmin,xmax]"
+    xmax::Float64
     "Wave number vector to compute derivative with FFTs"
-    k::Vector{Float64}
+    kx::Vector{Float64}
     "Size step along x"
     dx::Float64
     "Size step along v"
@@ -26,15 +30,15 @@ struct Mesh
     "points along v direction"
     v::Vector{Float64}
 
-    function Mesh(N, M, H, L)
+    function Mesh(xmin, xmax, nx, vmin, vmax, nv)
 
-        dx = L / M
-        dv = 2H / N
-        k = collect(2π ./ L .* fftfreq(M, M))
-        x = collect((0:(M-1)) .* dx)
-        v = collect((1:N) .* dv .- H)
+        dx = (xmax - xmin) / nx
+        dv = (vmax - vmin) / nv
+        kx = collect(2π ./ (xmax - xmin) .* fftfreq(nx, nx))
+        x = collect(0:(nx-1)) .* (xmax - xmin) ./ nx 
+        v = collect(1:nv) .* dv .- 0.5 * (vmax - vmin)
 
-        new(N, M, H, L, k, dx, dv, x, v)
+        new(nv, nx, vmin, vmax, xmin, xmax, kx, dx, dv, x, v)
 
     end
 end

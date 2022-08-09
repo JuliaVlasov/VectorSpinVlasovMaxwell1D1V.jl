@@ -22,12 +22,12 @@ export HeOperator
 
 struct HeOperator
 
-    adv::Translator
+    adv::AbstractAdvection
     e::Vector{Float64}
 
     function HeOperator(adv)
 
-        e = zeros(adv.mesh.M)
+        e = zeros(adv.mesh.nx)
 
         new(adv, e)
 
@@ -49,9 +49,9 @@ function step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, op::HeOperator, t)
 
     op.e .= -t .* real(ifft(E1))
 
-    translation!(f0, op.adv, op.e)
-    translation!(f1, op.adv, op.e)
-    translation!(f2, op.adv, op.e)
-    translation!(f3, op.adv, op.e)
+    advection!(f0, op.adv, op.e)
+    advection!(f1, op.adv, op.e)
+    advection!(f2, op.adv, op.e)
+    advection!(f3, op.adv, op.e)
 
 end

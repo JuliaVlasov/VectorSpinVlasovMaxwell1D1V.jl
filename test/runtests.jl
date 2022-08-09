@@ -25,11 +25,8 @@ const kk = 0.17 # v_th
 
 @testset "Version 1" begin
 
-    mesh = Mesh(N, M, H, L)
-    adv = Translator(mesh)
-
-    E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, kkk, k0)
-    f0, f1, f2, f3 = initialfunction(mesh, a, kkk, ata)
+    E1, E2, E3, A2, A3 = initialfields(H, L, N, M, a, ww, kkk, k0)
+    f0, f1, f2, f3 = initialfunction(H, L, N, M, a, kkk, ata)
 
     fields = matread("fields0.mat")
 
@@ -125,8 +122,8 @@ end
 
 @testset "Version 2" begin
 
-    mesh = Mesh(N, M, H, L)
-    adv = Translator(mesh)
+    mesh = Mesh(0, L, M, -H, H, N)
+    adv = PSMAdvection(mesh)
 
     E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, kkk, k0)
     f0, f1, f2, f3 = initialfunction(mesh, a, kkk, ata)

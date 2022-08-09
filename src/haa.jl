@@ -16,16 +16,17 @@ function HAA!(f0, f1, f2, f3, E2, E3, A2, A3, t, L, H)
     v = real(partialA2) .* AA2 .+ real(partialA3) .* AA3
     v .*= t
 
-    for i = 2:M
+    @inbounds for i = 2:M
         E2[i] += t * k[i]^2 * A2[i]
         E3[i] += t * k[i]^2 * A3[i]
     end
 
-    for i = 1:M
+    @inbounds for i = 1:M
         s = sum(view(f0, :, i))
         AA2[i] = 2H / N * AA2[i] * s
         AA3[i] = 2H / N * AA3[i] * s
     end
+
     E2 .+= t * fft(AA2)
     E3 .+= t * fft(AA3)
 
@@ -41,7 +42,7 @@ export HAAOperator
 
 struct HAAOperator
 
-    adv::Translator
+    adv::AbstractAdvection
     A2::Vector{Float64}
     A3::Vector{Float64}
     dA2::Vector{ComplexF64}
@@ -50,11 +51,11 @@ struct HAAOperator
 
     function HAAOperator(adv)
 
-        A2 = zeros(adv.mesh.M)
-        A3 = zeros(adv.mesh.M)
-        dA2 = zeros(ComplexF64, adv.mesh.M)
-        dA3 = zeros(ComplexF64, adv.mesh.M)
-        delta = zeros(adv.mesh.M)
+        A2 = zeros(adv.mesh.nx)
+        A3 = zeros(adv.mesh.nx)
+        dA2 = zeros(ComplexF64, adv.mesh.nx)
+        dA3 = zeros(ComplexF64, adv.mesh.nx)
+        delta = zeros(adv.mesh.nx)
 
         new(adv, A2, A3, dA2, dA3, delta)
 
@@ -65,39 +66,39 @@ end
 """
 $(SIGNATURES)
 """
-function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, t)
+function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, dt)
 
-    M = op.adv.mesh.M
-    k = op.adv.mesh.k
+    nx = op.adv.mesh.nx
+    kx = op.adv.mesh.kx
     dv = op.adv.mesh.dv
 
-    op.dA2 .= 1im .* k .* A2
+    op.dA2 .= 1im .* kx .* A2
     ifft!(op.dA2)
-    op.dA3 .= 1im .* k .* A3
+    op.dA3 .= 1im .* kx .* A3
     ifft!(op.dA3)
     op.A2 .= real(ifft(A2))
     op.A3 .= real(ifft(A3))
 
     op.delta .= real(op.dA2) .* op.A2 .+ real(op.dA3) .* op.A3
-    op.delta .*= t
+    op.delta .*= dt
 
-    for i = 2:M
-        E2[i] += t * k[i]^2 * A2[i]
-        E3[i] += t * k[i]^2 * A3[i]
+    @inbounds for i = 2:nx
+        E2[i] += dt * kx[i]^2 * A2[i]
+        E3[i] += dt * kx[i]^2 * A3[i]
     end
 
-    for i = 1:M
+    @inbounds for i = 1:nx
         s = sum(view(f0, :, i))
         op.A2[i] = dv * op.A2[i] * s
         op.A3[i] = dv * op.A3[i] * s
     end
 
-    E2 .+= t * fft(op.A2)
-    E3 .+= t * fft(op.A3)
+    E2 .+= dt * fft(op.A2)
+    E3 .+= dt * fft(op.A3)
 
-    translation!(f0, op.adv, op.delta)
-    translation!(f1, op.adv, op.delta)
-    translation!(f2, op.adv, op.delta)
-    translation!(f3, op.adv, op.delta)
+    advection!(f0, op.adv, op.delta)
+    advection!(f1, op.adv, op.delta)
+    advection!(f2, op.adv, op.delta)
+    advection!(f3, op.adv, op.delta)
 
 end
