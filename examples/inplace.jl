@@ -19,8 +19,8 @@ const to = TimerOutput()
 function inplace()
 
     T = 50 # 4000  # final time
-    M = 129   # partition of x
-    N = 129   # partition of v
+    M = 128   # partition of x
+    N = 128   # partition of v
     H = 5.0 / 2   # v domain size()
     kkk = 1.2231333040331807  #ke
     L = 4pi / kkk  # x domain size()
@@ -85,8 +85,20 @@ time, Ex_energy, E_energy, B_energy, energy, Sz, Tvalue = inplace()
 
 show(to)
 
-plot(time, log.(Ex_energy), label="julia v1")
-
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
 
-plot!(vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab")
+p = plot(layout=(2,2))
+plot!(p[1,1], time, log.(Ex_energy), label="julia v1")
+xlabel!(p[1,1], "Ex energy - log")
+plot!(p[2,1], time, log.(E_energy), label="julia v1")
+xlabel!(p[2,1], "E energy - log")
+plot!(p[1,2], time, log.(B_energy), label="julia v1")
+xlabel!(p[1,2], "B energy - log")
+plot!(p[2,2], time, log.(energy), label="julia v1")
+xlabel!(p[2,2], "energy - log")
+
+plot!(p[1,1], vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab", legend = :bottomright)
+plot!(p[2,1], vec(vars["time"]), log.(vec(vars["E_energy"])), label="matlab", legend = :bottom)
+plot!(p[1,2], vec(vars["time"]), log.(vec(vars["B_energy"])), label="matlab")
+plot!(p[2,2], vec(vars["time"]), log.(vec(vars["Sz"])), label="matlab")
+

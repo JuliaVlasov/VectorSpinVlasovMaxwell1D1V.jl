@@ -83,7 +83,7 @@ struct Advection
         nv        = mesh.nv
         step      = mesh.dv
         modes     = zeros(Float64, nv)
-        modes    .= [2π * i / nv for i in 0:nx-1]
+        modes    .= [2π * i / nv for i in 0:nv-1]
         eig_bspl  = zeros(Float64, nv)
         eig_bspl .= bspline(p, -div(p+1,2), 0.0)
         for i in 1:div(p+1,2)-1
@@ -95,10 +95,7 @@ struct Advection
     
 end
 
-# + slideshow={"slide_type": "slide"}
-function (adv :: Advection)(f    :: Array{Float64,2}, 
-                            v    :: Vector{Float64}, 
-                            dt   :: Float64)
+function advection!( f, adv :: Advection, v, dt)
     
    f̂ = fft(f,1)
     
@@ -120,6 +117,14 @@ function (adv :: Advection)(f    :: Array{Float64,2},
    end
         
    f .= real(ifft(f̂,1))
+    
+end            
+
+function (adv :: Advection)(f    :: Array{Float64,2}, 
+                            v    :: Vector{Float64}, 
+                            dt   :: Float64)
+
+    advection!( f, adv, v, dt)
     
 end            
 
@@ -153,8 +158,8 @@ function landau_damping(tf::Float64, nt::Int64)
   fᵗ = zeros(nx,nv)
     
   # Instantiate advection functions
-  advection_x! = Advection(p, meshx)
-  advection_v! = Advection(p, meshv)
+  adv_x = Advection(p, meshx)
+  adv_v = Advection(p, mesh)
   
   # Set time step
   dt = tf / nt
@@ -173,7 +178,7 @@ function landau_damping(tf::Float64, nt::Int64)
         
        push!(ℰ, 0.5*log(sum(e.*e)*dx))
         
-       advection_v!(f, e, dt)
+       advection!(f, adv_v, e, dt)
     
        transpose!(fᵗ, f)
        advection_x!(fᵗ, v, 0.5dt)

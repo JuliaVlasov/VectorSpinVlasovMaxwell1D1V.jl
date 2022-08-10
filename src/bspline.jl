@@ -45,7 +45,7 @@ struct BSplineAdvection <: AbstractAdvection
     eigalpha::Vector{ComplexF64}
     ft::Matrix{ComplexF64}
 
-    function BSplineAdvection(mesh; p=3 )
+    function BSplineAdvection(mesh; p = 3)
 
         modes = [2pi * i / mesh.nv for i = 0:mesh.nv-1]
         eig_bspl = zeros(mesh.nv)
@@ -66,12 +66,12 @@ export advection!
 """
 $(SIGNATURES)
 """
-function advection!(f, adv :: BSplineAdvection, edt)
+function advection!(f, adv::BSplineAdvection, edt)
 
     p = adv.p
     dv = adv.mesh.dv
 
-    adv.ft .=  f
+    adv.ft .= f
     fft!(adv.ft, 1)
 
     for j in eachindex(edt)

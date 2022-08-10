@@ -19,8 +19,8 @@ const to = TimerOutput()
 function operators()
 
     T = 50 # 4000  # final time
-    nv = 128   # partition of x
-    nx = 128   # partition of v
+    nx = 128  # partition of x
+    nv = 256   # partition of v
     vmin, vmax = -2.5, 2.5   # v domain size()
     ke = 1.2231333040331807  #ke
     xmin, xmax = 0, 4pi / ke  # x domain size()
@@ -33,8 +33,8 @@ function operators()
     ata = 0.2
 
     mesh = Mesh(xmin, xmax, nx, vmin, vmax, nv)
-    adv = BSplineAdvection(mesh)
-    # adv = PSMAdvection(mesh)
+    # adv = BSplineAdvection(mesh)
+    adv = PSMAdvection(mesh)
 
     E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, ke, k0)
     f0, f1, f2, f3 = initialfunction(mesh, a, ke, ata)
@@ -81,4 +81,7 @@ plot(results.time, log.(results.Ex_energy), label="julia v2")
 
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
 
-plot!(vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab")
+title!("electric energy - log")
+plot!(vec(vars["time"]), log.(vec(vars["Ex_energy"])), 
+      label="matlab", legend = :bottomright)
+
