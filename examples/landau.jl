@@ -110,7 +110,7 @@ function compute_rho(meshv::UniformMesh,
         f::Array{Complex{Float64},2})
 
    dv = meshv.dx
-   rho = dv * sum(real(f), dims=2)
+   rho = dv * sum(real(f), dims=1)
    vec(rho .- mean(rho)) # vec squeezes the 2d array returned by sum function
 end
 
@@ -197,8 +197,8 @@ function landau( ϵ, kx, meshx, meshv)
     nv = meshv.nx
     x  = meshx.x
     v  = meshv.x
-    f  = zeros(Complex{Float64},(nx,nv))
-    f .= (1.0.+ϵ*cos.(kx*x))/sqrt(2π) .* transpose(exp.(-0.5*v.^2))
+    f  = zeros(Complex{Float64},(nv,nx))
+    f .= transpose(1.0.+ϵ*cos.(kx*x))/sqrt(2π) .* exp.(-0.5*v.^2)
     f
 end
 
@@ -217,7 +217,7 @@ function landau_damping(tf::Float64, nt::Int64)
   # Set distribution function for Landau damping
   ϵ, kx = 0.001, 0.5
   f = landau( ϵ, kx, meshx, meshv)
-  fᵗ = zeros(Complex{Float64},(nv,nx))
+  fᵗ = zeros(Complex{Float64},(nx,nv))
     
   # Instantiate advection functions
   advection_x! = Advection(p, meshx)
@@ -231,18 +231,20 @@ function landau_damping(tf::Float64, nt::Int64)
   
   for it in 1:nt
         
-       advection_x!(f, v, 0.5dt)
+       transpose!(fᵗ, f)
+       advection_x!(fᵗ, v, 0.5dt)
+       transpose!(f, fᵗ)
 
        ρ = compute_rho(meshv, f)
        e = compute_e(meshx, ρ)
         
        push!(ℰ, 0.5*log(sum(e.*e)*dx))
         
-       transpose!(fᵗ, f)
-       advection_v!(fᵗ, e, dt)
-       transpose!(f, fᵗ)
+       advection_v!(f, e, dt)
     
-       advection_x!(f, v, 0.5dt)
+       transpose!(fᵗ, f)
+       advection_x!(fᵗ, v, 0.5dt)
+       transpose!(f, fᵗ)
         
   end
                   
