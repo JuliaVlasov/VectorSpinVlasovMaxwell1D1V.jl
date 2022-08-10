@@ -70,7 +70,7 @@ function step!(f0, f1, f2, f3, E1, op::H1fOperator, t)
     fft!(op.tmp, 1)
 
     @inbounds for i = 2:nx
-        E1[i] += 1 / (1im * kx[i]) * sum(op.tmp[i,:] .* (op.expv[i,:] .- 1.0)) * dv
+        E1[i] += 1 / (1im * kx[i]) * sum(view(op.tmp,i,:) .* (view(op.expv,i,:) .- 1.0)) * dv
     end
 
     op.tmp .*= op.expv

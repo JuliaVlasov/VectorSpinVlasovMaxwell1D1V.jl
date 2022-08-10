@@ -35,8 +35,8 @@ struct Mesh
         dx = (xmax - xmin) / nx
         dv = (vmax - vmin) / nv
         kx = collect(2π ./ (xmax - xmin) .* fftfreq(nx, nx))
-        x = collect(0:(nx-1)) .* (xmax - xmin) ./ nx 
-        v = collect(1:nv) .* dv .- 0.5 * (vmax - vmin)
+        x = LinRange(xmin, xmax, nx+1)[1:end-1] # remove last point
+        v = LinRange(vmin, vmax, nv+1)[2:end]   # remove first point
 
         new(nv, nx, vmin, vmax, xmin, xmax, kx, dx, dv, x, v)
 

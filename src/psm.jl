@@ -104,8 +104,8 @@ function advection!(df, adv::PSMAdvection, delta)
 
             l1 = mod1(l+1,nv)
             k1 = 1 - k
-            k2 = (1 - k)^2
-            k3 = (1 - k)^3
+            k2 = k1 * k1
+            k3 = k2 * k1
 
             val = adv.a[l] / 3 + 0.5 * adv.b[l] + adv.c[l]
             val += -adv.a[l] / 3 * k3 - 0.5 * adv.b[l] * k2

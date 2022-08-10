@@ -19,24 +19,25 @@ const to = TimerOutput()
 function operators()
 
     T = 50 # 4000  # final time
-    nv = 129   # partition of x
-    nx = 129   # partition of v
+    nv = 128   # partition of x
+    nx = 128   # partition of v
     vmin, vmax = -2.5, 2.5   # v domain size()
-    kkk = 1.2231333040331807  #ke
-    xmin, xmax = 0, 4pi / kkk  # x domain size()
+    ke = 1.2231333040331807  #ke
+    xmin, xmax = 0, 4pi / ke  # x domain size()
     h = 0.04 #time step size()
     nsteps = floor(Int, T / h + 1.1) # time step number
     a = 0.02 # 0.001; perturbation coefficient
     h_int = 0.2 # hbar
-    k0 = 2.0 * kkk
+    k0 = 2.0 * ke
     ww = sqrt(1.0 + k0^2.0) # w0
     ata = 0.2
 
     mesh = Mesh(xmin, xmax, nx, vmin, vmax, nv)
-    adv = PSMAdvection(mesh)
+    adv = BSplineAdvection(mesh)
+    # adv = PSMAdvection(mesh)
 
-    E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, kkk, k0)
-    f0, f1, f2, f3 = initialfunction(mesh, a, kkk, ata)
+    E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, ke, k0)
+    f0, f1, f2, f3 = initialfunction(mesh, a, ke, ata)
 
     Ex_energy = Float64[]
     E_energy = Float64[]

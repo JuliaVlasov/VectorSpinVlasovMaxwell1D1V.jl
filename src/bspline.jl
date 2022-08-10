@@ -1,8 +1,4 @@
-export BSpline
-
-Base.@kwdef struct BSpline
-    p :: Int = 3
-end
+export BSplineAdvection
 
 """
 $(SIGNATURES)
@@ -47,56 +43,59 @@ struct BSplineAdvection <: AbstractAdvection
     modes::Vector{Float64}
     eig_bspl::Vector{Float64}
     eigalpha::Vector{ComplexF64}
+    ft::Matrix{ComplexF64}
 
-    function BSplineAdvection(mesh, p )
+    function BSplineAdvection(mesh; p=3 )
 
-        modes = [2pi * i / mesh.nx for i = 0:mesh.nx-1]
-        eig_bspl = zeros(mesh.nx)
+        modes = [2pi * i / mesh.nv for i = 0:mesh.nv-1]
+        eig_bspl = zeros(mesh.nv)
         eig_bspl .= bspline(p, -div(p + 1, 2), 0.0)
         for i = 1:div(p + 1, 2)-1
             eig_bspl .+= bspline(p, i - (p + 1) ÷ 2, 0.0) * 2 .* cos.(i * modes)
         end
-        eigalpha = zeros(ComplexF64, mesh.nx)
-        new(mesh, p, modes, eig_bspl, eigalpha)
+        eigalpha = zeros(ComplexF64, mesh.nv)
+        ft = zeros(ComplexF64, mesh.nv, mesh.nx)
+        new(mesh, p, modes, eig_bspl, eigalpha, ft)
+
     end
 
 end
 
-export advect
+export advection!
 
 """
 $(SIGNATURES)
 """
-function advect(self :: BSplineAdvection, f, v, dt)
+function advection!(f, adv :: BSplineAdvection, edt)
 
-    p = self.p
-    nx = self.mesh.nx
-    dx = self.mesh.dx
+    p = adv.p
+    dv = adv.mesh.dv
 
-    ft = fft(f, 1)
+    adv.ft .=  f
+    fft!(adv.ft, 1)
 
-    for j in eachindex(v)
+    for j in eachindex(edt)
 
-        alpha = dt * v[j] / dx
+        alpha = edt[j] / dv
         # compute eigenvalues of cubic splines evaluated at displaced points
         ishift = floor(-alpha)
         beta = -ishift - alpha
-        fill!(self.eigalpha, 0.0im)
+        fill!(adv.eigalpha, 0.0im)
         for i = -div(p - 1, 2):div(p + 1, 2)
-            self.eigalpha .+= (
+            adv.eigalpha .+= (
                 bspline(p, i - div(p + 1, 2), beta) .*
-                exp.((ishift + i) .* 1im .* self.modes)
+                exp.((ishift + i) .* 1im .* adv.modes)
             )
         end
 
         # compute interpolating spline using fft and properties of circulant matrices
 
-        ft[:, j] .*= self.eigalpha ./ self.eig_bspl
+        adv.ft[:, j] .*= adv.eigalpha ./ adv.eig_bspl
 
     end
 
-    ifft!(ft, 1)
+    ifft!(adv.ft, 1)
 
-    f .= real(ft)
+    f .= real(adv.ft)
 
 end
