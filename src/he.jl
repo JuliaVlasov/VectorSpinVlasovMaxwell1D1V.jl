@@ -42,12 +42,12 @@ $(SIGNATURES)
 compute the first subsystem He()
 - M is odd number
 """
-function step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, op::HeOperator, t)
+function step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, op::HeOperator, dt)
 
-    A2 .-= t .* E2
-    A3 .-= t .* E3
+    A2 .-= dt .* E2
+    A3 .-= dt .* E3
 
-    op.e .= -t .* real(ifft(E1))
+    op.e .= -dt .* real(ifft(E1))
 
     advection!(f0, op.adv, op.e)
     advection!(f1, op.adv, op.e)

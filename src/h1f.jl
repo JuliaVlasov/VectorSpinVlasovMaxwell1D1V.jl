@@ -57,14 +57,14 @@ end
 """
 $(SIGNATURES)
 """
-function step!(f0, f1, f2, f3, E1, op::H1fOperator, t)
+function step!(f0, f1, f2, f3, E1, op::H1fOperator, dt)
 
     dv = op.adv.mesh.dv
     nx = op.adv.mesh.nx
     nv = op.adv.mesh.nv
     kx = op.adv.mesh.kx
-    v = op.adv.mesh.v .- 0.5dv
-    op.expv .= exp.(- 1im .* kx .* v' .* t)
+    v = op.adv.mesh.vnode
+    op.expv .= exp.(- 1im .* kx .* v' .* dt)
 
     transpose!(op.tmp, f0)
     fft!(op.tmp, 1)

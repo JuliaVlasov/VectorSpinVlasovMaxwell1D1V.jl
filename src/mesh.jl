@@ -29,6 +29,8 @@ struct Mesh
     x::Vector{Float64}
     "points along v direction"
     v::Vector{Float64}
+    "center points along v direction"
+    vnode::Vector{Float64}
 
     function Mesh(xmin, xmax, nx, vmin, vmax, nv)
 
@@ -37,8 +39,9 @@ struct Mesh
         kx = collect(2π ./ (xmax - xmin) .* fftfreq(nx, nx))
         x = LinRange(xmin, xmax, nx+1)[1:end-1] # remove last point
         v = LinRange(vmin, vmax, nv+1)[2:end]   # remove first point
+        vnode = v .- 0.5dv
 
-        new(nv, nx, vmin, vmax, xmin, xmax, kx, dx, dv, x, v)
+        new(nv, nx, vmin, vmax, xmin, xmax, kx, dx, dv, x, v, vnode)
 
     end
 end

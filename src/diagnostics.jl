@@ -141,17 +141,15 @@ function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
     B_energy = 1 / 2 * sum(BB2 .^ 2) * dx + 1 / 2 * sum(BB3 .^ 2) * dx
     energy2 = E_energy + B_energy
 
-    v1node = v .- 0.5dv
-
-    ff0 = 1 / 2 * (f0 .* (v.^2 .+ AA2'.^2 .+ AA3'.^2)) * dx * dv
+    ff0 = 1 / 2 * (f0 .* (mesh.vnode.^2 .+ AA2'.^2 .+ AA3'.^2)) * dx * dv
     ff2 = -h_int * f2 .* BB2' * dx * dv
     ff3 = -h_int * f3 .* BB3' * dx * dv
 
-    Jbar = vec(sum( f0 .* v1node, dims=1))
+    Jbar = vec(sum( f0 .* mesh.vnode, dims=1))
     ubar = Jbar ./ sum(f0)
 
     # temperature
-    Tt = vec(sum(f0 .* (v .- ubar).^2, dims=1) * dv)
+    Tt = vec(sum(f0 .* (mesh.vnode .- ubar').^2, dims=1) .* dv)
     energy1 = sum(ff0 .+ ff2 .+ ff3)
     # total energy
     energy = energy1 + energy2

@@ -20,7 +20,7 @@ function operators()
 
     T = 50 # 4000  # final time
     nx = 128  # partition of x
-    nv = 256   # partition of v
+    nv = 128   # partition of v
     vmin, vmax = -2.5, 2.5   # v domain size()
     ke = 1.2231333040331807  #ke
     xmin, xmax = 0, 4pi / ke  # x domain size()
@@ -77,11 +77,22 @@ end
 results = operators()
 
 show(to)
-plot(results.time, log.(results.Ex_energy), label="julia v2")
 
 vars = matread(joinpath(@__DIR__,"sVMEata0p2.mat"))
 
-title!("electric energy - log")
-plot!(vec(vars["time"]), log.(vec(vars["Ex_energy"])), 
-      label="matlab", legend = :bottomright)
+p = plot(layout=(2,2))
+plot!(p[1,1], results.time, log.(results.Ex_energy), label="julia v1")
+xlabel!(p[1,1], "Ex energy - log")
+plot!(p[2,1], results.time, log.(results.E_energy), label="julia v1")
+xlabel!(p[2,1], "E energy - log")
+plot!(p[1,2], results.time, log.(results.B_energy), label="julia v1")
+xlabel!(p[1,2], "B energy - log")
+plot!(p[2,2], results.time, log.(results.energy), label="julia v1")
+xlabel!(p[2,2], "energy - log")
+
+plot!(p[1,1], vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab", legend = :bottomright)
+plot!(p[2,1], vec(vars["time"]), log.(vec(vars["E_energy"])), label="matlab", legend = :bottom)
+plot!(p[1,2], vec(vars["time"]), log.(vec(vars["B_energy"])), label="matlab")
+plot!(p[2,2], vec(vars["time"]), log.(vec(vars["Sz"])), label="matlab")
+
 

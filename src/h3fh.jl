@@ -73,7 +73,7 @@ end
 """
 $(SIGNATURES)
 """
-function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
+function step!(f0, f1, f2, f3, E2, A2, op, dt, h_int)
 
     nx = op.adv.mesh.nx
     dv = op.adv.mesh.dv
@@ -82,7 +82,7 @@ function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
     op.partial .= -k .^ 2 .* A2
     ifft!(op.partial)
 
-    op.v1 .= -t .* h_int .* real(op.partial) ./ sqrt(3)
+    op.v1 .= -dt .* h_int .* real(op.partial) ./ sqrt(3)
     op.v2 .= -op.v1
 
     op.u1 .= 0.5 .* f0 .+ 0.5 .* sqrt(3) .* f3
@@ -96,8 +96,8 @@ function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
 
     f0 .= op.u1 .+ op.u2
     f3 .= op.u1 ./ sqrt(3) .- op.u2 ./ sqrt(3)
-    op.u1 .= cos.(t .* real(op.partial')) .* f1 .+ sin.(t .* real(op.partial')) .* f2
-    op.u2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f2
+    op.u1 .= cos.(dt .* real(op.partial')) .* f1 .+ sin.(dt .* real(op.partial')) .* f2
+    op.u2 .= -sin.(dt .* real(op.partial')) .* f1 .+ cos.(dt .* real(op.partial')) .* f2
 
     f1 .= op.u1
     f2 .= op.u2
@@ -106,6 +106,6 @@ function step!(f0, f1, f2, f3, E2, A2, op, t, h_int)
     fft!(op.f3, 1)
 
     @inbounds for i = 2:nx
-        E2[i] += t * h_int * 1im * k[i] * sum(view(op.f3, i, :)) * dv
+        E2[i] += dt * h_int * 1im * k[i] * sum(view(op.f3, i, :)) * dv
     end
 end

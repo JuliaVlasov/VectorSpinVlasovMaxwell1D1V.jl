@@ -74,14 +74,14 @@ compute the subsystem H2
 $(SIGNATURES)
 
 """
-function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, t, h_int)
+function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, dt, h_int)
 
     kx, dv = op.adv.mesh.kx, op.adv.mesh.dv
 
     op.partial .= -kx .^ 2 .* A3
     ifft!(op.partial)
 
-    op.v1 .= t .* h_int .* real(op.partial) ./ sqrt(3)
+    op.v1 .= dt .* h_int .* real(op.partial) ./ sqrt(3)
     op.v2 .= -op.v1
 
     op.u1 .= 0.5 * f0 .+ 0.5 * sqrt(3) .* f2
@@ -97,11 +97,11 @@ function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, t, h_int)
 
     f0 .= op.u1 .+ op.u2
     f2 .= op.u1 ./ sqrt(3) .- op.u2 ./ sqrt(3)
-    op.u1 .= cos.(t .* real(op.partial')) .* f1 .+ sin.(t .* real(op.partial')) .* f3
-    op.u2 .= -sin.(t .* real(op.partial')) .* f1 .+ cos.(t .* real(op.partial')) .* f3
+    op.u1 .= cos.(dt .* real(op.partial')) .* f1 .+ sin.(dt .* real(op.partial')) .* f3
+    op.u2 .= -sin.(dt .* real(op.partial')) .* f1 .+ cos.(dt .* real(op.partial')) .* f3
 
     fft!(op.f2, 1)
-    E3 .-= t .* h_int .* (1im .* kx) .* vec(sum(op.f2, dims = 2)) .* dv
+    E3 .-= dt .* h_int .* (1im .* kx) .* vec(sum(op.f2, dims = 2)) .* dv
 
     f1 .= op.u1
     f3 .= op.u2
