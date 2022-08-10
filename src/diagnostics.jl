@@ -150,7 +150,7 @@ function diagnostics(f0, f2, f3, E1, E2, E3, A2, A3, mesh::Mesh, h_int)
 
     # temperature
     Tt = vec(sum(f0 .* (mesh.vnode .- ubar').^2, dims=1) .* dv)
-    energy1 = sum(ff0 .+ ff2 .+ ff3)
+    energy1 = sum(sum(ff0 .+ ff2 .+ ff3, dims=1))
     # total energy
     energy = energy1 + energy2
     # spectrum

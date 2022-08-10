@@ -59,11 +59,11 @@ $(SIGNATURES)
 """
 function step!(f0, f1, f2, f3, E1, op::H1fOperator, dt)
 
-    dv = op.adv.mesh.dv
-    nx = op.adv.mesh.nx
-    nv = op.adv.mesh.nv
-    kx = op.adv.mesh.kx
-    v = op.adv.mesh.vnode
+    dv :: Float64 = op.adv.mesh.dv
+    nx :: Int = op.adv.mesh.nx
+    nv :: Int = op.adv.mesh.nv
+    kx :: Vector{Float64} = op.adv.mesh.kx
+    v :: Vector{Float64} = op.adv.mesh.vnode
     op.expv .= exp.(- 1im .* kx .* v' .* dt)
 
     transpose!(op.tmp, f0)

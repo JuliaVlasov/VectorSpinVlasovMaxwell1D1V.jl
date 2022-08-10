@@ -75,9 +75,9 @@ $(SIGNATURES)
 """
 function step!(f0, f1, f2, f3, E2, A2, op, dt, h_int)
 
-    nx = op.adv.mesh.nx
-    dv = op.adv.mesh.dv
-    k = op.adv.mesh.kx
+    nx :: Int = op.adv.mesh.nx
+    dv :: Float64 = op.adv.mesh.dv
+    k :: Vector{Float64} = op.adv.mesh.kx
 
     op.partial .= -k .^ 2 .* A2
     ifft!(op.partial)
