@@ -82,14 +82,14 @@ function step!(f0, f1, f2, f3, E3, A3, op::H2fhOperator, dt, h_int)
     op.partial .= -kx .^ 2 .* A3
     ifft!(op.partial)
 
-    op.v1 .= dt .* h_int .* real(op.partial) ./ sqrt(3)
+    op.v1 .= h_int .* real(op.partial) ./ sqrt(3)
     op.v2 .= -op.v1
 
     op.u1 .= 0.5 * f0 .+ 0.5 * sqrt(3) .* f2
     op.u2 .= 0.5 * f0 .- 0.5 * sqrt(3) .* f2
 
-    advection!(op.u1, op.adv, op.v1)
-    advection!(op.u2, op.adv, op.v2)
+    advection!(op.u1, op.adv, op.v1, dt)
+    advection!(op.u2, op.adv, op.v2, dt)
 
     transpose!(op.f2, f2)
 

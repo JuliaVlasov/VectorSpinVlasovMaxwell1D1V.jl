@@ -46,7 +46,7 @@ linear advection problem in ``p`` direction
 From the conservation of the volume, we have the following identity
 
 ```math
-f_{j,\\ell}(t)=\\frac{1}{\\Delta p} \\int_{p_{\\ell-1/2}} ^{p_{\\ell+1/2}} f(x_j,p,t)\\mathrm{d}{p} =\frac{1}{\\Delta p} \\int_{p_{\\ell-1/2}-at} ^{p_{\\ell+1/2}-at} f(x_j,p,0)\\mathrm{d}{p}.
+f_{j,\\ell}(t)=\\frac{1}{\\Delta p} \\int_{p_{\\ell-1/2}} ^{p_{\\ell+1/2}} f(x_j,p,t)\\mathrm{d}{p} =\\frac{1}{\\Delta p} \\int_{p_{\\ell-1/2}-at} ^{p_{\\ell+1/2}-at} f(x_j,p,0)\\mathrm{d}{p}.
 ```
 
 For simplicity, denote by ``q\\in [1, M]`` the index such that
@@ -61,18 +61,19 @@ Here we need to reconstruct a polynomial function ``f(x_j,p,0)`` using the
 averages ``f_{j,l}(0)`` using the PSM approach. 
 
 """
-function advection!(df, adv::PSMAdvection, delta)
+function advection!(df, adv::PSMAdvection, v, dt)
 
-    nv, nx = adv.mesh.nv, adv.mesh.nx
-    dv = adv.mesh.dv
+    nx::Int = adv.mesh.nx
+    nv::Int = adv.mesh.nv
+    dv::Float64 = adv.mesh.dv
 
-    @inbounds for j = 1:nx
+    @inbounds for j = eachindex(v)
 
-        adv.c[1] = df[1, j]
+        adv.c[begin] = df[1, j]
         for i = 2:nv
             adv.c[i] = df[i-1, j] + df[i, j]
         end
-        adv.c[nv+1] = df[nv, j]
+        adv.c[end] = df[nv, j]
         adv.c .= adv.A \ adv.c
 
         for i = 2:nv
@@ -81,13 +82,13 @@ function advection!(df, adv::PSMAdvection, delta)
         for i = 2:nv
             adv.b[i] = (-1)^i * 2 * sum(view(adv.d, 2:i))
         end
-        adv.b[1] = 0
+        adv.b[begin] = 0
         for i in 1:nv-1
             adv.a[i] = 1 / 2 * (adv.b[i+1] - adv.b[i])
         end
-        adv.a[nv] = -1 / 2 * adv.b[nv]
+        adv.a[end] = -1 / 2 * adv.b[end]
 
-        alpha = delta[j] / dv
+        alpha = v[j] * dt / dv
 
         for i = 1:nv
 

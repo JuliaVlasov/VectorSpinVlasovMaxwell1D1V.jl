@@ -80,7 +80,6 @@ function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, dt)
     op.A3 .= real(ifft(A3))
 
     op.delta .= real(op.dA2) .* op.A2 .+ real(op.dA3) .* op.A3
-    op.delta .*= dt
 
     @inbounds for i = 2:nx
         E2[i] += dt * kx[i]^2 * A2[i]
@@ -96,9 +95,9 @@ function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, dt)
     E2 .+= dt * fft(op.A2)
     E3 .+= dt * fft(op.A3)
 
-    advection!(f0, op.adv, op.delta)
-    advection!(f1, op.adv, op.delta)
-    advection!(f2, op.adv, op.delta)
-    advection!(f3, op.adv, op.delta)
+    advection!(f0, op.adv, op.delta, dt)
+    advection!(f1, op.adv, op.delta, dt)
+    advection!(f2, op.adv, op.delta, dt)
+    advection!(f3, op.adv, op.delta, dt)
 
 end

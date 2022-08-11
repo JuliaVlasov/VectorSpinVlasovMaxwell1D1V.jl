@@ -19,21 +19,21 @@ const to = TimerOutput()
 function inplace()
 
     T = 50 # 4000  # final time
-    M = 128   # partition of x
-    N = 128   # partition of v
+    M = 129   # partition of x
+    N = 129   # partition of v
     H = 5.0 / 2   # v domain size()
-    kkk = 1.2231333040331807  #ke
-    L = 4pi / kkk  # x domain size()
+    ke = 1.2231333040331807
+    L = 4pi / ke  # x domain size()
     h = 0.04 #time step size()
     NUM = floor(Int, T / h + 1.1) # time step number
     a = 0.02 # 0.001; perturbation coefficient
     h_int = 0.2 # hbar
-    k0 = 2.0 * kkk
-    ww = sqrt(1.0 + k0^2.0) # w0
+    k0 = 2.0 * ke
+    w0 = sqrt(1.0 + k0^2.0) 
     ata = 0.2
 
-    E1, E2, E3, A2, A3 = initialfields( H, L, N, M, a, ww, kkk, k0)
-    f0, f1, f2, f3 = initialfunction(H, L, N, M, a, kkk, ata)
+    E1, E2, E3, A2, A3 = initialfields( H, L, N, M, a, w0, ke, k0)
+    f0, f1, f2, f3 = initialfunction(H, L, N, M, a, ke, ata)
 
     # test several properties include electric energy; total energy; spectrum etc. save initial data
     Ex_energy = Float64[]
@@ -100,5 +100,5 @@ xlabel!(p[2,2], "energy - log")
 plot!(p[1,1], vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab", legend = :bottomright)
 plot!(p[2,1], vec(vars["time"]), log.(vec(vars["E_energy"])), label="matlab", legend = :bottom)
 plot!(p[1,2], vec(vars["time"]), log.(vec(vars["B_energy"])), label="matlab")
-plot!(p[2,2], vec(vars["time"]), log.(vec(vars["Sz"])), label="matlab")
+plot!(p[2,2], vec(vars["time"]), log.(vec(vars["energy"])), label="matlab", legend = :bottomleft)
 

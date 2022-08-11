@@ -88,6 +88,6 @@ xlabel!(p[2,2], "energy - log")
 plot!(p[1,1], vec(vars["time"]), log.(vec(vars["Ex_energy"])), label="matlab", legend = :bottomright)
 plot!(p[2,1], vec(vars["time"]), log.(vec(vars["E_energy"])), label="matlab", legend = :bottom)
 plot!(p[1,2], vec(vars["time"]), log.(vec(vars["B_energy"])), label="matlab")
-plot!(p[2,2], vec(vars["time"]), log.(vec(vars["Sz"])), label="matlab")
+plot!(p[2,2], vec(vars["time"]), log.(vec(vars["energy"])), label="matlab", legend = :bottomleft)
 
 
