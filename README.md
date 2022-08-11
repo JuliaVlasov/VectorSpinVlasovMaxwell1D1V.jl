@@ -7,5 +7,5 @@
 
 
 ```bash
-julia -O3 --check-bounds=no --project examples/inplace.jl
+julia -O4 --check-bounds=no --project examples/inplace.jl
 ```
