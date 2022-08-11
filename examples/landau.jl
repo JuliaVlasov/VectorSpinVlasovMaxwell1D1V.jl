@@ -1,10 +1,11 @@
+import VectorSpinVlasovMaxwell1D1V: bspline
+
 using FFTW
 using LinearAlgebra
 using Plots
 using ProgressMeter
 using Statistics
 using VectorSpinVlasovMaxwell1D1V
-import VectorSpinVlasovMaxwell1D1V: bspline
 
 """
     UniformMesh(xmin, xmax, nx)
@@ -170,7 +171,7 @@ function landau_damping(tf::Float64, nt::Int64)
   @showprogress 1 for it in 1:nt
         
        transpose!(fᵗ, f)
-       advection_x!(fᵗ, v, 0.5dt)
+       adv_x(fᵗ, v, 0.5dt)
        transpose!(f, fᵗ)
 
        ρ = compute_rho(mesh, f)
@@ -181,7 +182,7 @@ function landau_damping(tf::Float64, nt::Int64)
        advection!(f, adv_v, e, dt)
     
        transpose!(fᵗ, f)
-       advection_x!(fᵗ, v, 0.5dt)
+       adv_x(fᵗ, v, 0.5dt)
        transpose!(f, fᵗ)
         
   end
