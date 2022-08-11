@@ -69,7 +69,7 @@ $(SIGNATURES)
 function advection!(f, adv::BSplineAdvection, edt)
 
     p = adv.p
-    dv = adv.mesh.dv
+    dv :: Float64 = adv.mesh.dv
 
     adv.ft .= f
     fft!(adv.ft, 1)
