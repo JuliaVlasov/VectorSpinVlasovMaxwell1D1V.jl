@@ -47,7 +47,7 @@ function step!(f0, f1, f2, f3, E1, E2, E3, A2, A3, op::HeOperator, dt)
     A2 .-= dt .* E2
     A3 .-= dt .* E3
 
-    op.e .= - real(ifft(E1))
+    op.e .= real(ifft(E1))
 
     advection!(f0, op.adv, op.e, dt)
     advection!(f1, op.adv, op.e, dt)
