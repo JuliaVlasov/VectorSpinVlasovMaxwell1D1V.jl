@@ -37,8 +37,9 @@ Advection to be computed on each row
 $(TYPEDFIELDS)
 
 """
-struct BSplineAdvection
+struct BSplineAdvection <: AbstractAdvection
     
+    mesh     :: Mesh
     dims     :: Symbol
     p        :: Int64 
     step     :: Float64
@@ -47,7 +48,7 @@ struct BSplineAdvection
     eigalpha :: Vector{Complex{Float64}}
     fhat     :: Matrix{ComplexF64}
     
-    function BSplineAdvection( p, mesh :: Mesh; dims = :v )
+    function BSplineAdvection( mesh :: Mesh; p = 3, dims = :v )
 
         if dims == :v
             n        = mesh.nv
@@ -67,7 +68,7 @@ struct BSplineAdvection
             eig_bspl .+= bspline(p, i-(p+1)÷2, 0.0) * 2 .* cos.(i * modes)
         end
         eigalpha  = zeros(Complex{Float64}, n)
-        new( dims, p, step, modes, eig_bspl, eigalpha, fhat )
+        new( mesh, dims, p, step, modes, eig_bspl, eigalpha, fhat )
     end
     
 end

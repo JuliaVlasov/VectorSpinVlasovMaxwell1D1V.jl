@@ -30,8 +30,8 @@ function operators()
     ata = 0.2
 
     mesh = Mesh(xmin, xmax, nx, vmin, vmax, nv)
-    # adv = BSplineAdvection(mesh)
-    adv = PSMAdvection(mesh)
+    adv = BSplineAdvection(mesh)
+    #adv = PSMAdvection(mesh)
 
     E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, ke, k0)
     f0, f1, f2, f3 = initialfunction(mesh, a, ke, ata)

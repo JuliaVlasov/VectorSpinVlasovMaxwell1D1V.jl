@@ -36,7 +36,7 @@ end
 """
 $(SIGNATURES)
 
-interpolate df(x - delta) with Parabolic Spline Method (PSM) 
+interpolate df(x + delta) with Parabolic Spline Method (PSM) 
 
 We consider a
 linear advection problem in ``p`` direction

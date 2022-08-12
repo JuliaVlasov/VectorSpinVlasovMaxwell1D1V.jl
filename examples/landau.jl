@@ -6,6 +6,7 @@ using Plots
 using ProgressMeter
 using Statistics
 using VectorSpinVlasovMaxwell1D1V
+using SemiLagrangian
 
 """
     compute_rho(meshv, f)
@@ -60,7 +61,7 @@ function landau_damping(tf::Float64, nt::Int64)
   f = landau( ϵ, kx, mesh)
     
   # Instantiate advection functions
-  adv_x = BSplineAdvection(p, mesh, dims = :x)
+  adv_x = BSplineAdvection(mesh, p = 5, dims = :x)
   adv_v = PSMAdvection(mesh)
   
   # Set time step
