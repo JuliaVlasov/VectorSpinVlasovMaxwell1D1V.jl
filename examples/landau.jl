@@ -72,16 +72,16 @@ function landau_damping(tf::Float64, nt::Int64)
   
   @showprogress 1 for it in 1:nt
         
-       advection!(f, adv_x, v, 0.5dt)
+       VectorSpinVlasovMaxwell1D1V.advection!(f, adv_x, v, 0.5dt)
 
        ρ = compute_rho(mesh, f)
        e = compute_e(mesh, ρ)
         
        push!(ℰ, 0.5*log(sum(e.*e)*dx))
         
-       advection!(f, adv_v, e, dt)
+       VectorSpinVlasovMaxwell1D1V.advection!(f, adv_v, e, dt)
     
-       advection!(f, adv_x, v, 0.5dt)
+       VectorSpinVlasovMaxwell1D1V.advection!(f, adv_x, v, 0.5dt)
         
   end
                   
@@ -89,11 +89,57 @@ function landau_damping(tf::Float64, nt::Int64)
 
 end
 
+
+function run_simulation(nbdt, sz, dt)
+    
+    epsilon = 0.001
+
+    xmin, xmax, nx = 0., 4π, sz[1]
+    vmin, vmax, nv = -6., 6., sz[2]
+
+    mesh_x = UniformMesh(xmin, xmax, nx)
+    mesh_v = UniformMesh(vmin, vmax, nv)
+
+    states = [([1, 2], 1, 1, true), ([2, 1], 1, 2, true)]
+
+    interp = Lagrange(9, Float64)
+    tab_coef = strangsplit(dt)
+
+    adv = Advection((mesh_x, mesh_v), [interp, interp], dt, states; 
+        tab_coef, timeopt = NoTimeOpt)
+    
+    kx = 0.5 
+    x = mesh_x.points
+    v = mesh_v.points
+    fx = epsilon * cos.(kx * x) .+ 1
+    fv = exp.(-v.^2 / 2) ./ sqrt(2π)
+    f = fx .* fv'
+
+    pvar = getpoissonvar(adv)
+
+    advd = AdvectionData(adv, f, pvar)
+
+    time = Float64[]
+    el = Float64[]
+    @showprogress 1 for i = 1:nbdt
+        while SemiLagrangian.advection!(advd) end
+        push!(time, advd.time_cur)
+        ee = compute_ee(advd)
+        push!(el, 0.5 * log(ee))
+    end
+    return time, el
+end
+
 nt = 1000
 tf = 100.0
 t  = range(0.0, stop=tf, length=nt)
-@time nrj = landau_damping(tf, nt);
 
-plot( t, nrj; label = "E")
+
+sz = (128, 256)
+dt =  tf / nt
+@time time, el = run_simulation( nt, sz, dt)
+@time nrj = landau_damping(tf, nt);
+plot( t, nrj; label = "LocalImplementation")
 plot!(t, -0.1533*t.-5.50; label="-0.1533t.-5.5")
+plot!(time, el, label="SemiLagrangian")
 
