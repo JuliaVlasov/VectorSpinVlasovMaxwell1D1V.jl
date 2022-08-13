@@ -7,5 +7,7 @@
 
 
 ```bash
+git clone https://github.com/JuliaVlasov/VectorSpinVlasovMaxwell1D1V.jl.git
+cd VectorSpinVlasovMaxwell1D1V.jl
 julia -O3 --check-bounds=no --project examples/inplace.jl
 ```
