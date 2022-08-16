@@ -56,6 +56,15 @@ end
 
 """
 $(SIGNATURES)
+
+```math
+\\begin{aligned}
+\\dot{x} & =p \\\\
+\\dot{E}_x & = - \\int (p f ) dp ds
+\\end{aligned}
+```
+
+``H_p`` operator
 """
 function step!(f0, f1, f2, f3, E1, op::H1fOperator, dt)
 

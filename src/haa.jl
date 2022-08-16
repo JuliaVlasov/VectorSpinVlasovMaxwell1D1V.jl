@@ -65,6 +65,14 @@ end
 
 """
 $(SIGNATURES)
+
+```math
+\\begin{aligned}
+\\dot{p} = (A_y, A_z) \\cdot \\partial_x (A_y, A_z)   \\\\
+\\dot{Ey} = -\\partial_x^2 A_y + A_y \\rho \\\\
+\\dot{Ez} = -\\partial_x^2 A_z + A_z \\rho \\\\
+\\end{aligned}
+```
 """
 function step!(f0, f1, f2, f3, E2, E3, A2, A3, op::HAAOperator, dt)
 
