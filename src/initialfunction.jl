@@ -12,15 +12,9 @@ function numeint(value, N)
     return integralvalue ./ 90
 end
 
-function f(x, v, frequency, a)
+function f(x, v, kx, α; σ = 0.17)
 
-    kk = 0.17 # v_th
-    value =
-        (1 / sqrt(2 * pi) / kk) *
-        exp(-v^2 / 2 / kk / kk) *
-        (1 + a * cos(frequency * x))
-
-    return value
+    return exp(- 0.5 * v^2 / σ^2) * (1 + α * cos(kx * x)) / sqrt(2π) / σ
 
 end
 
@@ -77,7 +71,7 @@ function initialfunction(H, L, N, M, a, frequency, ata)
 
 end
 
-function initialfunction(mesh, a, frequency, ata)
+function initialfunction(mesh :: Mesh, α, kx, σ, ata)
 
     xmin, xmax = mesh.xmin, mesh.xmax
     vmin, vmax = mesh.vmin, mesh.vmax
@@ -97,11 +91,11 @@ function initialfunction(mesh, a, frequency, ata)
             v4 = mesh.v[i] - dv * 0.25
             v5 = mesh.v[i] 
 
-            y1 = f(mesh.x[k], v1, frequency, a)
-            y2 = f(mesh.x[k], v2, frequency, a)
-            y3 = f(mesh.x[k], v3, frequency, a)
-            y4 = f(mesh.x[k], v4, frequency, a)
-            y5 = f(mesh.x[k], v5, frequency, a)
+            y1 = f(mesh.x[k], v1, kx, α, σ = σ)
+            y2 = f(mesh.x[k], v2, kx, α, σ = σ)
+            y3 = f(mesh.x[k], v3, kx, α, σ = σ)
+            y4 = f(mesh.x[k], v4, kx, α, σ = σ)
+            y5 = f(mesh.x[k], v5, kx, α, σ = σ)
 
             f0[i,k] = (7y1 + 32y2 + 12y3 + 32y4 + 7y5) / 90
         end
