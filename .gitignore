@@ -16,3 +16,5 @@ Manifest.toml
 *.swp
 
 
+examples/.DS_Store
+.DS_Store
