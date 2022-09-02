@@ -33,9 +33,6 @@ function H3fh!(f0, f1, f2, f3, E2, A2, t, L, H, h_int)
     f1 .= u1
     f2 .= u2
 
-    #ff3 = complex(f3)
-    #fft!(ff3, 2)
-
     @inbounds for i = 2:M
         E2[i] += t * h_int * 1im * k[i] * sum(view(ff3, :, i)) * 2H / N
     end
@@ -83,6 +80,8 @@ function step!(f0, f1, f2, f3, E2, A2, op, dt, h_int)
 
     op.partial .= -k .^ 2 .* A2
     ifft!(op.partial)
+    transpose!(op.f3, f3)
+    fft!(op.f3, 1)
 
     op.v1 .= h_int .* real(op.partial) ./ sqrt(3)
     op.v2 .= -op.v1
@@ -103,9 +102,6 @@ function step!(f0, f1, f2, f3, E2, A2, op, dt, h_int)
 
     f1 .= op.u1
     f2 .= op.u2
-
-    transpose!(op.f3, f3)
-    fft!(op.f3, 1)
 
     @inbounds for i = 2:nx
         E2[i] += dt * h_int * 1im * k[i] * sum(view(op.f3, i, :)) * dv
