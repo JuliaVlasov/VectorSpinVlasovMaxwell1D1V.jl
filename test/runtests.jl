@@ -126,7 +126,7 @@ end
     adv = PSMAdvection(mesh)
 
     E1, E2, E3, A2, A3 = initialfields( mesh, a, ww, kkk, k0)
-    f0, f1, f2, f3 = initialfunction(mesh, a, kkk, ata)
+    f0, f1, f2, f3 = initialfunction(mesh, a, kkk, kk, ata)
 
     fields = matread("fields0.mat")
 
