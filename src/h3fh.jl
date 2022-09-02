@@ -12,6 +12,8 @@ function H3fh!(f0, f1, f2, f3, E2, A2, t, L, H, h_int)
     ifft!(partialA2)
     partial2A2 = -k .^ 2 .* A2
     ifft!(partial2A2)
+    ff3 = complex(f3)
+    fft!(ff3, 2)
 
     # solve transport problem in v direction by Semi-Lagrangain method
     v1 = -t * h_int * real(partial2A2) ./ sqrt(3)
@@ -31,8 +33,8 @@ function H3fh!(f0, f1, f2, f3, E2, A2, t, L, H, h_int)
     f1 .= u1
     f2 .= u2
 
-    ff3 = complex(f3)
-    fft!(ff3, 2)
+    #ff3 = complex(f3)
+    #fft!(ff3, 2)
 
     @inbounds for i = 2:M
         E2[i] += t * h_int * 1im * k[i] * sum(view(ff3, :, i)) * 2H / N
